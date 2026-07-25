@@ -1,0 +1,71 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Warna merek — biru tua tepercaya, nuansa institusi pendidikan */
+    --color-brand-50: #eef3fb;
+    --color-brand-100: #d8e4f6;
+    --color-brand-200: #b4caee;
+    --color-brand-300: #85a8e1;
+    --color-brand-400: #5983d1;
+    --color-brand-500: #3b63bd;
+    --color-brand-600: #2a4d9f;
+    --color-brand-700: #233f80;
+    --color-brand-800: #1d3266;
+    --color-brand-900: #16264d;
+    --color-brand-950: #0d1730;
+
+    /* Aksen hangat untuk sorotan & ajakan bertindak */
+    --color-accent-400: #f2b544;
+    --color-accent-500: #e09b1d;
+    --color-accent-600: #bd7c11;
+
+    /* Peran status — dipakai apa adanya, selalu berdampingan dengan label teks */
+    --color-state-good: #0ca30c;
+    --color-state-warning: #fab219;
+    --color-state-serious: #ec835a;
+    --color-state-critical: #d03b3b;
+
+    --shadow-card: 0 1px 2px 0 rgb(13 23 48 / 0.04), 0 1px 3px 0 rgb(13 23 48 / 0.06);
+    --shadow-lift: 0 10px 30px -12px rgb(13 23 48 / 0.18), 0 2px 6px -2px rgb(13 23 48 / 0.08);
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Judul rapat agar terbaca tegas dan berwibawa */
+    h1, h2, h3 {
+        letter-spacing: -0.02em;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-brand-500);
+        outline-offset: 2px;
+    }
+}
+
+@layer components {
+    /* Label kecil huruf kapital — penanda bagian yang konsisten di seluruh situs */
+    .eyebrow {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    /* Angka besar memakai figur proporsional; kolom angka memakai tabular */
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
+}
