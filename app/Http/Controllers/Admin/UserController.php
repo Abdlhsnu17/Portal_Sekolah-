@@ -12,7 +12,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         return view('admin.users.index', [
-            'items' => User::search($request->input('q'))->orderBy('name')->paginate(15)->withQueryString(),
+            'items' => User::search($request->input('q'))->orderBy('name')->paginate(10)->withQueryString(),
         ]);
     }
 

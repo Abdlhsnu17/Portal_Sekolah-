@@ -18,19 +18,19 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[700px] text-left text-sm">
+            <table class="w-full min-w-[600px] text-left text-sm">
                 <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <tr>
                         <th class="px-4 py-3">Nama</th>
                         <th class="px-4 py-3">Peran</th>
                         <th class="px-4 py-3">Status</th>
                         <th class="px-4 py-3">Login Terakhir</th>
-                        <th class="px-4 py-3 text-right">Aksi</th>
+                        <th class="sticky right-0 bg-slate-50 px-4 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @foreach ($items as $item)
-                        <tr class="hover:bg-slate-50">
+                        <tr class="group hover:bg-slate-50">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <span class="grid size-9 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-800">
@@ -60,7 +60,7 @@
                             <td class="px-4 py-3 text-xs text-slate-600">
                                 {{ $item->last_login_at ? $item->last_login_at->diffForHumans() : 'Belum pernah' }}
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="sticky right-0 bg-white px-4 py-3 group-hover:bg-slate-50">
                                 <div class="flex items-center justify-end gap-3">
                                     <a href="{{ route('admin.users.edit', $item) }}" class="font-semibold text-brand-700 hover:text-brand-900">Ubah</a>
                                     @unless ($item->is(auth()->user()))

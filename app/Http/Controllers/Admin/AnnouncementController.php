@@ -16,7 +16,7 @@ class AnnouncementController extends Controller
             'items' => Announcement::when($request->input('q'), fn ($query, $term) => $query->where('judul', 'like', "%{$term}%"))
                 ->when($request->input('kategori'), fn ($query, $kategori) => $query->where('kategori', $kategori))
                 ->latest()
-                ->paginate(15)
+                ->paginate(10)
                 ->withQueryString(),
             'filterKategori' => $request->input('kategori'),
         ]);

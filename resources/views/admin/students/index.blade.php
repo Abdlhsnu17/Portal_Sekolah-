@@ -24,35 +24,37 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[820px] text-left text-sm">
+            <table class="w-full min-w-[640px] text-left text-sm">
                 <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <tr>
                         <th class="px-4 py-3">NIS</th>
                         <th class="px-4 py-3">Nama</th>
                         <th class="px-4 py-3">Kelas</th>
-                        <th class="px-4 py-3">Jurusan</th>
-                        <th class="px-4 py-3">L/P</th>
+                        {{-- Kolom sekunder disembunyikan di layar sempit agar tabel tetap muat --}}
+                        <th class="hidden px-4 py-3 xl:table-cell">Jurusan</th>
+                        <th class="hidden px-4 py-3 lg:table-cell">L/P</th>
                         <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3 text-right">Aksi</th>
+                        {{-- Kolom aksi menempel di kanan agar tak pernah tertutup saat tabel digeser --}}
+                        <th class="sticky right-0 bg-slate-50 px-4 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($items as $item)
-                        <tr class="hover:bg-slate-50">
+                        <tr class="group hover:bg-slate-50">
                             <td class="px-4 py-3 font-mono text-xs text-slate-600">{{ $item->nis }}</td>
                             <td class="px-4 py-3">
                                 <p class="font-semibold text-brand-950">{{ $item->nama }}</p>
                                 <p class="text-xs text-slate-500">{{ $item->email ?: 'Tanpa email' }}</p>
                             </td>
                             <td class="px-4 py-3 text-slate-600">{{ $item->kelas ?: '—' }}</td>
-                            <td class="px-4 py-3 text-slate-600">{{ $item->jurusan ?: '—' }}</td>
-                            <td class="px-4 py-3 text-slate-600">{{ $item->jenis_kelamin }}</td>
+                            <td class="hidden px-4 py-3 text-slate-600 xl:table-cell">{{ $item->jurusan ?: '—' }}</td>
+                            <td class="hidden px-4 py-3 text-slate-600 lg:table-cell">{{ $item->jenis_kelamin }}</td>
                             <td class="px-4 py-3">
                                 <span class="rounded-full px-2.5 py-1 text-xs font-semibold capitalize {{ $item->status === 'aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
                                     {{ $item->status }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="sticky right-0 bg-white px-4 py-3 group-hover:bg-slate-50">
                                 <div class="flex items-center justify-end gap-3">
                                     <a href="{{ route('admin.students.edit', $item) }}" class="font-semibold text-brand-700 hover:text-brand-900">Ubah</a>
                                     <form method="POST" action="{{ route('admin.students.destroy', $item) }}"

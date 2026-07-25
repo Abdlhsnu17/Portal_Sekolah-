@@ -14,7 +14,7 @@ class TeacherController extends Controller
         return view('admin.teachers.index', [
             'items' => Teacher::search($request->input('q'))
                 ->orderBy('nama')
-                ->paginate(15)
+                ->paginate(10)
                 ->withQueryString(),
         ]);
     }

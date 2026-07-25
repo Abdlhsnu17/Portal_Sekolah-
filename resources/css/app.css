@@ -68,4 +68,33 @@
     .tabular {
         font-variant-numeric: tabular-nums;
     }
+
+    /*
+     * Sidebar admin yang dapat diciutkan.
+     * Status disimpan sebagai atribut pada <html> agar tidak berkedip saat halaman
+     * dimuat ulang, dan hanya berlaku mulai lebar layar lg — di bawah itu sidebar
+     * tetap berupa laci penuh sehingga labelnya wajib terbaca.
+     */
+    .admin-sidebar {
+        width: 16rem;
+    }
+
+    @media (min-width: 1024px) {
+        .admin-sidebar {
+            transition: width 200ms ease;
+        }
+
+        html[data-sidebar='collapsed'] .admin-sidebar {
+            width: 4.5rem;
+        }
+
+        html[data-sidebar='collapsed'] .sidebar-label {
+            display: none;
+        }
+
+        html[data-sidebar='collapsed'] .sidebar-link {
+            justify-content: center;
+            padding-inline: 0;
+        }
+    }
 }

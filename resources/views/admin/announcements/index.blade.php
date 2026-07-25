@@ -33,21 +33,22 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[720px] text-left text-sm">
+            <table class="w-full min-w-[600px] text-left text-sm">
                 <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <tr>
                         <th class="px-4 py-3">Judul</th>
                         <th class="px-4 py-3">Kategori</th>
-                        <th class="px-4 py-3">Publikasi</th>
-                        <th class="px-4 py-3">Tanggal</th>
-                        <th class="px-4 py-3 text-right">Aksi</th>
+                        <th class="hidden px-4 py-3 xl:table-cell">Publikasi</th>
+                        <th class="hidden px-4 py-3 lg:table-cell">Tanggal</th>
+                        <th class="sticky right-0 bg-slate-50 px-4 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($items as $item)
-                        <tr class="hover:bg-slate-50">
-                            <td class="px-4 py-3">
-                                <p class="font-semibold text-brand-950">{{ $item->judul }}</p>
+                        <tr class="group hover:bg-slate-50">
+                            {{-- Lebar dibatasi agar judul panjang tidak memaksa tabel melebar --}}
+                            <td class="max-w-[15rem] px-4 py-3">
+                                <p class="truncate font-semibold text-brand-950">{{ $item->judul }}</p>
                                 <p class="truncate text-xs text-slate-500">{{ Str::limit($item->ringkasan_teks, 70) }}</p>
                             </td>
                             <td class="px-4 py-3">
@@ -55,15 +56,15 @@
                                     {{ $item->kategori }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="hidden px-4 py-3 xl:table-cell">
                                 <span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ $item->is_published ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
                                     {{ $item->is_published ? 'Terbit' : 'Draf' }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-xs text-slate-600">
+                            <td class="hidden px-4 py-3 text-xs text-slate-600 lg:table-cell">
                                 {{ optional($item->published_at ?? $item->created_at)->translatedFormat('d M Y') }}
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="sticky right-0 bg-white px-4 py-3 group-hover:bg-slate-50">
                                 <div class="flex items-center justify-end gap-3">
                                     @if ($item->is_published)
                                         <a href="{{ route('berita.detail', $item->slug) }}" target="_blank"

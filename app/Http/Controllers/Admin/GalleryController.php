@@ -15,7 +15,7 @@ class GalleryController extends Controller
         return view('admin.galleries.index', [
             'items' => Gallery::when($request->input('kategori'), fn ($query, $kategori) => $query->where('kategori', $kategori))
                 ->latest()
-                ->paginate(16)
+                ->paginate(12)
                 ->withQueryString(),
             'filterKategori' => $request->input('kategori'),
         ]);

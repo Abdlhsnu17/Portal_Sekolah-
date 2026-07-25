@@ -18,7 +18,7 @@ class RegistrationController extends Controller
                 ->when($request->input('status'), fn ($query, $status) => $query->where('status', $status))
                 ->withCount('documents')
                 ->latest()
-                ->paginate(15)
+                ->paginate(10)
                 ->withQueryString(),
             'filterStatus' => $request->input('status'),
         ]);

@@ -15,7 +15,7 @@ class StudentController extends Controller
             'items' => Student::search($request->input('q'))
                 ->when($request->input('kelas'), fn ($query, $kelas) => $query->where('kelas', $kelas))
                 ->orderBy('nama')
-                ->paginate(15)
+                ->paginate(10)
                 ->withQueryString(),
             'daftarKelas' => Student::whereNotNull('kelas')->distinct()->orderBy('kelas')->pluck('kelas'),
             'filterKelas' => $request->input('kelas'),
