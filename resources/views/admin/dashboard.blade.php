@@ -3,36 +3,75 @@
 @section('title', 'Dashboard')
 
 @section('content')
-    {{-- Ringkasan angka: label + nilai, tanpa hiasan warna --}}
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @php
+        $totalPendaftar = $statusPendaftaran->sum();
+        $menunggu = $statistik['menunggu'] ?? 0;
+        $tingkatVerifikasi = $statistik['pendaftar'] > 0
+            ? round((($statistik['pendaftar'] - $menunggu) / $statistik['pendaftar']) * 100)
+            : 0;
+    @endphp
+
+    <div class="mb-6 rounded-lg border border-slate-200 bg-white/95 p-5 shadow-card">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <p class="eyebrow text-slate-400">Ringkasan Operasional</p>
+                <h2 class="mt-1 text-xl font-bold text-brand-950">Aktivitas sekolah hari ini</h2>
+                <p class="mt-1 text-sm text-slate-500">Pantau data akademik, pendaftaran, dan konten publik dari satu layar.</p>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-3 lg:min-w-[34rem]">
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p class="text-xs font-semibold uppercase text-slate-500">Verifikasi</p>
+                    <p class="mt-1 tabular text-2xl font-bold text-brand-950">{{ $tingkatVerifikasi }}%</p>
+                </div>
+                <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                    <p class="text-xs font-semibold uppercase text-amber-700">Menunggu</p>
+                    <p class="mt-1 tabular text-2xl font-bold text-amber-900">{{ number_format($menunggu) }}</p>
+                </div>
+                <a href="{{ route('admin.registrations.index') }}" class="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 transition hover:border-brand-300 hover:bg-brand-100">
+                    <p class="text-xs font-semibold uppercase text-brand-700">Total PSB</p>
+                    <p class="mt-1 tabular text-2xl font-bold text-brand-950">{{ number_format($statistik['pendaftar']) }}</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
         @foreach ([
-            ['label' => 'Siswa aktif', 'nilai' => $statistik['siswa'], 'ikon' => 'users', 'rute' => route('admin.students.index')],
-            ['label' => 'Guru aktif', 'nilai' => $statistik['guru'], 'ikon' => 'academic', 'rute' => route('admin.teachers.index')],
-            ['label' => 'Menunggu verifikasi', 'nilai' => $statistik['menunggu'], 'ikon' => 'clock', 'rute' => route('admin.registrations.index', ['status' => 'menunggu'])],
-            ['label' => 'Total pendaftar', 'nilai' => $statistik['pendaftar'], 'ikon' => 'clipboard', 'rute' => route('admin.registrations.index')],
-            ['label' => 'Berita & pengumuman', 'nilai' => $statistik['berita'], 'ikon' => 'newspaper', 'rute' => route('admin.announcements.index')],
-            ['label' => 'Foto galeri', 'nilai' => $statistik['galeri'], 'ikon' => 'photo', 'rute' => route('admin.galleries.index')],
+            ['label' => 'Siswa aktif', 'nilai' => $statistik['siswa'], 'ikon' => 'users', 'rute' => route('admin.students.index'), 'tone' => 'bg-sky-50 text-sky-700 ring-sky-100'],
+            ['label' => 'Guru aktif', 'nilai' => $statistik['guru'], 'ikon' => 'academic', 'rute' => route('admin.teachers.index'), 'tone' => 'bg-emerald-50 text-emerald-700 ring-emerald-100'],
+            ['label' => 'Menunggu', 'nilai' => $statistik['menunggu'], 'ikon' => 'clock', 'rute' => route('admin.registrations.index', ['status' => 'menunggu']), 'tone' => 'bg-amber-50 text-amber-700 ring-amber-100'],
+            ['label' => 'Pendaftar', 'nilai' => $statistik['pendaftar'], 'ikon' => 'clipboard', 'rute' => route('admin.registrations.index'), 'tone' => 'bg-brand-50 text-brand-700 ring-brand-100'],
+            ['label' => 'Konten', 'nilai' => $statistik['berita'], 'ikon' => 'newspaper', 'rute' => route('admin.announcements.index'), 'tone' => 'bg-violet-50 text-violet-700 ring-violet-100'],
+            ['label' => 'Galeri', 'nilai' => $statistik['galeri'], 'ikon' => 'photo', 'rute' => route('admin.galleries.index'), 'tone' => 'bg-rose-50 text-rose-700 ring-rose-100'],
         ] as $kartu)
             <a href="{{ $kartu['rute'] }}"
-               class="group rounded-2xl border border-slate-200 bg-white p-5 shadow-card transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift">
-                <div class="flex items-center justify-between">
-                    <p class="text-sm font-medium text-slate-600">{{ $kartu['label'] }}</p>
-                    <x-icon :name="$kartu['ikon']" class="size-5 text-slate-400 transition group-hover:text-brand-600" />
+               class="group rounded-lg border border-slate-200 bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $kartu['label'] }}</p>
+                        <p class="mt-2 tabular text-3xl font-bold text-brand-950">{{ number_format($kartu['nilai']) }}</p>
+                    </div>
+                    <span class="grid size-9 shrink-0 place-items-center rounded-lg ring-1 {{ $kartu['tone'] }}">
+                        <x-icon :name="$kartu['ikon']" class="size-4" />
+                    </span>
                 </div>
-                <p class="mt-3 text-3xl font-semibold text-brand-950">{{ number_format($kartu['nilai']) }}</p>
             </a>
         @endforeach
     </div>
 
     <div class="mt-6 grid gap-6 lg:grid-cols-5">
         {{-- Sebaran status pendaftaran --}}
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-card lg:col-span-2">
-            <h2 class="text-base font-bold tracking-tight text-brand-950">Status Pendaftaran</h2>
-
-            @php $totalPendaftar = $statusPendaftaran->sum(); @endphp
+        <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-card lg:col-span-2">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="eyebrow text-slate-400">PSB</p>
+                    <h2 class="mt-1 text-base font-bold tracking-tight text-brand-950">Status Pendaftaran</h2>
+                </div>
+                <span class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">{{ $tingkatVerifikasi }}% diproses</span>
+            </div>
 
             {{-- Angka utama halaman ini --}}
-            <p class="mt-4 text-5xl font-semibold leading-none text-brand-950">{{ number_format($totalPendaftar) }}</p>
+            <p class="mt-5 tabular text-5xl font-bold leading-none text-brand-950">{{ number_format($totalPendaftar) }}</p>
             <p class="mt-2 text-sm text-slate-500">pendaftar sejak awal periode</p>
 
             @php
@@ -66,9 +105,12 @@
         </div>
 
         {{-- Pendaftar terbaru --}}
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card lg:col-span-3">
+        <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-card lg:col-span-3">
             <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                <h2 class="text-base font-bold tracking-tight text-brand-950">Pendaftar Terbaru</h2>
+                <div>
+                    <p class="eyebrow text-slate-400">Antrian</p>
+                    <h2 class="mt-1 text-base font-bold tracking-tight text-brand-950">Pendaftar Terbaru</h2>
+                </div>
                 <a href="{{ route('admin.registrations.index') }}"
                    class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 transition hover:text-brand-900">
                     Lihat semua <x-icon name="arrow-right" class="size-4" />
@@ -78,7 +120,7 @@
                 @forelse ($pendaftarTerbaru as $item)
                     <li class="flex items-center justify-between gap-4 px-6 py-3.5 transition hover:bg-slate-50">
                         <div class="flex min-w-0 items-center gap-3">
-                            <span class="grid size-9 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-bold text-brand-700">
+                            <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-xs font-bold text-brand-700 ring-1 ring-brand-100">
                                 {{ strtoupper(substr($item->nama_lengkap, 0, 1)) }}
                             </span>
                             <div class="min-w-0">
@@ -101,11 +143,14 @@
     </div>
 
     {{-- Konten terbaru --}}
-    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+    <div class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-card">
         <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-            <h2 class="text-base font-bold tracking-tight text-brand-950">Konten Terbaru</h2>
+            <div>
+                <p class="eyebrow text-slate-400">Publikasi</p>
+                <h2 class="mt-1 text-base font-bold tracking-tight text-brand-950">Konten Terbaru</h2>
+            </div>
             <a href="{{ route('admin.announcements.create') }}"
-               class="inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-brand-800">
+               class="admin-primary">
                 <x-icon name="plus" class="size-4" /> Tulis baru
             </a>
         </div>

@@ -31,7 +31,7 @@
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-100 font-sans text-slate-700 antialiased" x-data="{ sidebar: false }">
+<body class="admin-shell min-h-screen font-sans text-slate-700 antialiased" x-data="{ sidebar: false }">
 
 @php
     $menu = [
@@ -53,34 +53,41 @@
     {{-- Sidebar --}}
     {{-- Posisi awal ditulis statis agar tidak menutupi konten sebelum Alpine aktif --}}
     <aside :class="sidebar && 'translate-x-0!'"
-           class="admin-sidebar fixed inset-y-0 left-0 z-40 flex shrink-0 -translate-x-full flex-col overflow-y-auto overflow-x-hidden bg-brand-950 transition-transform lg:static lg:translate-x-0">
-        <div class="sidebar-link flex h-16 items-center gap-3 px-5">
-            <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-white/10 text-white ring-1 ring-white/15">
+           class="admin-sidebar fixed inset-y-0 left-0 z-40 flex shrink-0 -translate-x-full flex-col overflow-y-auto overflow-x-hidden border-r border-white/10 bg-brand-950 shadow-2xl shadow-brand-950/20 transition-transform lg:static lg:translate-x-0 lg:shadow-none">
+        <div class="sidebar-link flex h-16 items-center gap-3 border-b border-white/10 px-5">
+            <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-accent-400 text-brand-950 shadow-card">
                 <x-icon name="academic" class="size-5" />
             </span>
             <div class="sidebar-label leading-tight">
                 <p class="whitespace-nowrap text-sm font-bold text-white">Panel Admin</p>
-                <p class="whitespace-nowrap text-[11px] text-brand-100/50">Portal Sekolah</p>
+                <p class="whitespace-nowrap text-[11px] font-medium text-brand-100/60">Portal Sekolah</p>
             </div>
         </div>
 
-        <nav class="flex-1 space-y-1 p-3">
+        <nav class="flex-1 space-y-1.5 p-3">
             @foreach ($menu as $item)
                 @php $aktif = request()->routeIs($item['aktif']); @endphp
                 <a href="{{ route($item['rute']) }}" title="{{ $item['label'] }}"
-                   class="sidebar-link group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ $aktif ? 'bg-brand-700 text-white shadow-card' : 'text-brand-100/60 hover:bg-white/5 hover:text-white' }}">
+                   class="sidebar-link group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition {{ $aktif ? 'bg-white text-brand-950 shadow-card' : 'text-brand-100/60 hover:bg-white/10 hover:text-white' }}">
+                    @if ($aktif)
+                        <span class="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-accent-500"></span>
+                    @endif
                     <x-icon :name="$item['ikon']" class="size-5 shrink-0" />
                     <span class="sidebar-label whitespace-nowrap">{{ $item['label'] }}</span>
                 </a>
             @endforeach
         </nav>
 
-        <div class="border-t border-white/10 p-3">
+        <div class="space-y-3 border-t border-white/10 p-3">
             <a href="{{ route('home') }}" target="_blank" title="Lihat Situs"
-               class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-brand-100/60 transition hover:bg-white/5 hover:text-white">
+               class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-brand-100/70 transition hover:bg-white/10 hover:text-white">
                 <x-icon name="external" class="size-5 shrink-0" />
                 <span class="sidebar-label whitespace-nowrap">Lihat Situs</span>
             </a>
+            <div class="sidebar-label rounded-lg border border-white/10 bg-white/5 px-3 py-2.5">
+                <p class="text-[11px] font-semibold uppercase text-brand-100/50">Masuk sebagai</p>
+                <p class="mt-1 truncate text-xs font-semibold text-white">{{ auth()->user()->name }}</p>
+            </div>
         </div>
     </aside>
 
@@ -88,8 +95,8 @@
          class="fixed inset-0 z-30 bg-brand-950/60 lg:hidden"></div>
 
     {{-- Konten --}}
-    <div class="flex min-w-0 flex-1 flex-col">
-        <header class="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white/90 px-4 backdrop-blur-md sm:px-6">
+    <div class="relative flex min-w-0 flex-1 flex-col">
+        <header class="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-slate-200/80 bg-white/88 px-4 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur-xl sm:px-6">
             <div class="flex min-w-0 items-center gap-3">
                 {{-- Layar kecil: buka laci sidebar --}}
                 <button @click="sidebar = !sidebar" aria-label="Buka menu"
@@ -103,20 +110,26 @@
                         class="hidden size-9 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50 lg:grid">
                     <x-icon name="menu" />
                 </button>
-                <h1 class="truncate text-base font-bold tracking-tight text-brand-950">@yield('title', 'Dashboard')</h1>
+                <div class="min-w-0">
+                    <p class="hidden text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 sm:block">Administrasi</p>
+                    <h1 class="truncate text-base font-bold tracking-tight text-brand-950">@yield('title', 'Dashboard')</h1>
+                </div>
             </div>
 
             <div x-data="{ open: false }" class="relative shrink-0">
                 <button @click="open = !open"
-                        class="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition hover:bg-slate-100">
-                    <span class="grid size-8 place-items-center rounded-full bg-brand-700 text-xs font-bold text-white">
+                        class="flex items-center gap-2.5 rounded-lg border border-transparent px-2 py-1.5 transition hover:border-slate-200 hover:bg-white hover:shadow-card">
+                    <span class="grid size-8 place-items-center rounded-lg bg-brand-700 text-xs font-bold text-white shadow-card">
                         {{ auth()->user()->initials }}
                     </span>
-                    <span class="hidden text-sm font-medium text-slate-700 sm:block">{{ auth()->user()->name }}</span>
+                    <span class="hidden text-left sm:block">
+                        <span class="block text-sm font-semibold leading-4 text-slate-800">{{ auth()->user()->name }}</span>
+                        <span class="block text-[11px] font-medium capitalize text-slate-500">{{ auth()->user()->role }}</span>
+                    </span>
                 </button>
 
                 <div x-show="open" x-cloak @click.outside="open = false" x-transition.opacity
-                     class="absolute right-0 z-30 mt-2 w-60 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lift">
+                     class="absolute right-0 z-30 mt-2 w-64 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lift">
                     <div class="border-b border-slate-100 px-4 py-3">
                         <p class="text-sm font-semibold text-brand-950">{{ auth()->user()->name }}</p>
                         <p class="truncate text-xs text-slate-500">{{ auth()->user()->email }}</p>
@@ -134,7 +147,7 @@
             </div>
         </header>
 
-        <main class="flex-1 p-4 sm:p-6">
+        <main class="relative flex-1 p-4 sm:p-6 lg:p-8">
             <x-alert />
             <div class="mt-4">
                 @yield('content')
