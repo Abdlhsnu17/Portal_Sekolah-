@@ -1,58 +1,142 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Portal Sekolah
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Portal Sekolah adalah aplikasi web berbasis Laravel untuk mengelola profil sekolah, berita, galeri, data siswa, data guru, dan penerimaan siswa baru (PSB). Aplikasi ini menyediakan halaman publik untuk pengunjung serta panel admin untuk staf sekolah.
 
-## About Laravel
+## Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Halaman publik: beranda, profil sekolah, berita, detail berita, dan galeri.
+- Penerimaan siswa baru: formulir pendaftaran, cek status, unggah dokumen, dan penghapusan dokumen.
+- Panel admin: dashboard operasional, manajemen pendaftaran, siswa, guru, berita, galeri, profil sekolah, dan pengguna.
+- Role pengguna: `admin`, `staf`, dan `guru`.
+- Dashboard profesional dengan ringkasan statistik, status verifikasi PSB, pendaftar terbaru, dan konten terbaru.
+- Seed data demo untuk profil sekolah, akun, siswa, guru, konten, galeri, dan pendaftar.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Teknologi
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP `^8.3`
+- Laravel `^13.8`
+- MySQL atau database lain yang didukung Laravel
+- Vite `^8`
+- Tailwind CSS `^4`
+- Alpine.js
 
-## Learning Laravel
+## Instalasi Lokal
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+1. Install dependency PHP:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+2. Install dependency frontend:
 
-## Contributing
+```bash
+npm install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. Buat file environment dan app key:
 
-## Code of Conduct
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4. Atur koneksi database di `.env`, lalu jalankan migrasi dan seeder:
 
-## Security Vulnerabilities
+```bash
+php artisan migrate --seed
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+5. Buat symlink storage untuk file upload:
 
-## License
+```bash
+php artisan storage:link
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+6. Build asset frontend:
+
+```bash
+npm run build
+```
+
+7. Jalankan server:
+
+```bash
+php artisan serve
+```
+
+Akses aplikasi di `http://127.0.0.1:8000`.
+
+## Mode Development
+
+Untuk menjalankan server Laravel dan Vite secara terpisah:
+
+```bash
+php artisan serve
+npm run dev
+```
+
+Atau gunakan script gabungan dari Composer:
+
+```bash
+composer run dev
+```
+
+## Akun Demo
+
+Seeder membuat akun berikut:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@sekolah.test` | `password` |
+| Staf | `staf@sekolah.test` | `password` |
+
+Panel admin tersedia di:
+
+```text
+/admin
+```
+
+## Struktur Modul
+
+| Modul | Route Utama | Deskripsi |
+| --- | --- | --- |
+| Publik | `/`, `/profil`, `/berita`, `/galeri` | Informasi sekolah untuk pengunjung |
+| Pendaftaran | `/pendaftaran` | Form PSB dan unggah dokumen |
+| Cek Status | `/pendaftaran/cek-status` | Pengecekan status pendaftaran |
+| Dashboard Admin | `/admin` | Statistik dan aktivitas terbaru |
+| Pendaftaran Admin | `/admin/pendaftaran` | Verifikasi, catatan, penerimaan, dan penghapusan pendaftar |
+| Siswa | `/admin/students` | CRUD data siswa |
+| Guru | `/admin/teachers` | CRUD data guru |
+| Berita | `/admin/announcements` | CRUD berita, agenda, dan pengumuman |
+| Galeri | `/admin/galeri` | Upload dan kelola foto galeri |
+| Profil Sekolah | `/admin/profil-sekolah` | Edit informasi sekolah |
+| Pengguna | `/admin/users` | Manajemen pengguna khusus admin |
+
+## Catatan Asset Vite
+
+Jika muncul error:
+
+```text
+Vite manifest not found at: public/build/manifest.json
+```
+
+jalankan:
+
+```bash
+npm run build
+```
+
+Vite versi saat ini meminta Node.js `20.19+` atau `22.12+`. Jika build memberi warning versi Node, upgrade Node ke versi yang sesuai.
+
+## Testing
+
+Jalankan test Laravel:
+
+```bash
+php artisan test
+```
+
+## Dokumen Produk
+
+Dokumen Product Requirements Document tersedia di [docs/PRD.md](docs/PRD.md).
