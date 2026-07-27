@@ -75,8 +75,8 @@
                                     </div>
                                 </div>
                                 <div class="flex shrink-0 items-center gap-3">
-                                    <a href="{{ asset('storage/' . $doc->path) }}" target="_blank"
-                                       class="rounded-lg px-2.5 py-1.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50">Lihat</a>
+                                    <a href="{{ route('pendaftaran.dokumen.unduh', [$registration->nomor_pendaftaran, $doc->id]) }}"
+                                       class="rounded-lg px-2.5 py-1.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50">Unduh</a>
                                     <form method="POST"
                                           action="{{ route('pendaftaran.dokumen.hapus', [$registration->nomor_pendaftaran, $doc->id]) }}"
                                           onsubmit="return confirm('Hapus dokumen ini?')">

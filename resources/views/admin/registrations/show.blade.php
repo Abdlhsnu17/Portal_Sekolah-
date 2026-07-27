@@ -53,8 +53,8 @@
                                 <p class="text-sm font-semibold text-brand-950">{{ $doc->jenis }}</p>
                                 <p class="mt-0.5 truncate text-xs text-slate-500">{{ $doc->nama_file }} &middot; {{ $doc->ukuran_label }}</p>
                             </div>
-                            <a href="{{ asset('storage/' . $doc->path) }}" target="_blank"
-                               class="shrink-0 text-sm font-semibold text-brand-700 hover:text-brand-900">Buka</a>
+                            <a href="{{ route('admin.registrations.dokumen', [$item, $doc->id]) }}"
+                               class="shrink-0 text-sm font-semibold text-brand-700 hover:text-brand-900">Unduh</a>
                         </li>
                     @empty
                         <li class="px-5 py-10 text-center text-sm text-slate-500">Pendaftar belum mengunggah dokumen.</li>

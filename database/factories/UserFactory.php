@@ -30,7 +30,20 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            // Ditulis eksplisit meski kolomnya punya nilai bawaan: tanpa ini model
+            // hasil factory membawa role/is_active null di memori, sehingga penjaga
+            // akses menolak pengguna yang di basis data sebenarnya aktif.
+            'role' => 'admin',
+            'is_active' => true,
         ];
+    }
+
+    /** Akun yang aksesnya dicabut. */
+    public function nonaktif(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+        ]);
     }
 
     /**
