@@ -4,26 +4,39 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+    /*
+     * Tipografi. Inter untuk antarmuka & tabel (angka rata, huruf kecil terbaca
+     * pada 12px), Plus Jakarta Sans untuk judul — bentuknya lebih tegas dan
+     * memberi kontras hierarki tanpa perlu ukuran ekstrem. Keduanya punya
+     * cadangan font sistem, jadi tampilan tetap wajar bila berkas font gagal
+     * dimuat.
+     */
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
 
-    /* Warna merek — biru tua tepercaya, nuansa institusi pendidikan */
-    --color-brand-50: #eef3fb;
-    --color-brand-100: #d8e4f6;
-    --color-brand-200: #b4caee;
-    --color-brand-300: #85a8e1;
-    --color-brand-400: #5983d1;
-    --color-brand-500: #3b63bd;
-    --color-brand-600: #2a4d9f;
-    --color-brand-700: #233f80;
-    --color-brand-800: #1d3266;
-    --color-brand-900: #16264d;
-    --color-brand-950: #0d1730;
+    /* Warna merek — biru tua logo Nusantara Jaya (brand-800 = warna monogram) */
+    --color-brand-50: #f2f6fc;
+    --color-brand-100: #e1eaf7;
+    --color-brand-200: #c4d5ee;
+    --color-brand-300: #9cb6df;
+    --color-brand-400: #6c8ecb;
+    --color-brand-500: #4569b4;
+    --color-brand-600: #2f4f95;
+    --color-brand-700: #264178;
+    --color-brand-800: #1f345f;
+    --color-brand-900: #1b2c4e;
+    --color-brand-950: #111d34;
 
-    /* Aksen hangat untuk sorotan & ajakan bertindak */
-    --color-accent-400: #f2b544;
-    --color-accent-500: #e09b1d;
-    --color-accent-600: #bd7c11;
+    /* Aksen emas logo — sorotan & ajakan bertindak (accent-500 = warna monogram) */
+    --color-accent-50: #fdf8ee;
+    --color-accent-100: #f8ecd2;
+    --color-accent-200: #f0d69f;
+    --color-accent-300: #e5bd6d;
+    --color-accent-400: #d9a94e;
+    --color-accent-500: #c8953c;
+    --color-accent-600: #a5762c;
+    --color-accent-700: #7f5a22;
 
     /* Peran status — dipakai apa adanya, selalu berdampingan dengan label teks */
     --color-state-good: #0ca30c;
@@ -42,11 +55,43 @@
 @layer base {
     html {
         -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-size-adjust: 100%;
     }
 
-    /* Judul rapat agar terbaca tegas dan berwibawa */
-    h1, h2, h3 {
-        letter-spacing: -0.02em;
+    body {
+        /* cv11: bentuk 'a'/'g' satu lantai — lebih jernih pada teks kecil */
+        font-feature-settings: 'cv11';
+        font-optical-sizing: auto;
+    }
+
+    /*
+     * Judul memakai font display dengan spasi huruf yang mengetat seiring
+     * besarnya ukuran — teks besar terlihat renggang bila dibiarkan normal.
+     */
+    h1, h2, h3, h4 {
+        font-family: var(--font-display);
+        font-weight: 700;
+        letter-spacing: -0.019em;
+        text-wrap: balance;
+    }
+
+    h1 {
+        letter-spacing: -0.028em;
+    }
+
+    h2 {
+        letter-spacing: -0.024em;
+    }
+
+    /* Paragraf tidak menyisakan satu kata di baris terakhir */
+    p {
+        text-wrap: pretty;
+    }
+
+    ::selection {
+        background: var(--color-brand-100);
+        color: var(--color-brand-950);
     }
 
     :focus-visible {
@@ -58,6 +103,7 @@
 @layer components {
     /* Label kecil huruf kapital — penanda bagian yang konsisten di seluruh situs */
     .eyebrow {
+        font-family: var(--font-display);
         font-size: 0.6875rem;
         font-weight: 700;
         letter-spacing: 0.12em;
@@ -67,6 +113,15 @@
     /* Angka besar memakai figur proporsional; kolom angka memakai tabular */
     .tabular {
         font-variant-numeric: tabular-nums;
+        letter-spacing: 0;
+    }
+
+    /* Angka statistik: rapat, tegas, dan sejajar antar kartu */
+    .metric {
+        font-family: var(--font-display);
+        font-variant-numeric: tabular-nums;
+        font-weight: 800;
+        letter-spacing: -0.03em;
     }
 
     /*
@@ -145,7 +200,7 @@
     .admin-shell select:focus,
     .admin-shell textarea:focus {
         border-color: var(--color-brand-500);
-        box-shadow: 0 0 0 3px rgb(59 99 189 / 0.13);
+        box-shadow: 0 0 0 3px rgb(69 105 180 / 0.14);
     }
 
     .admin-chip {
@@ -185,7 +240,7 @@
         font-size: 0.875rem;
         font-weight: 700;
         color: white;
-        box-shadow: 0 8px 18px -14px rgb(13 23 48 / 0.65);
+        box-shadow: 0 8px 18px -14px rgb(17 29 52 / 0.6);
         transition: background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
     }
 
@@ -200,7 +255,7 @@
     .admin-shell button.bg-brand-950 {
         border-radius: 0.5rem;
         font-weight: 700;
-        box-shadow: 0 8px 18px -14px rgb(13 23 48 / 0.65);
+        box-shadow: 0 8px 18px -14px rgb(17 29 52 / 0.6);
     }
 
     .admin-shell a.bg-slate-100,

@@ -4,6 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login Petugas — {{ $profil->nama }}</title>
+    <meta name="theme-color" content="#111d34">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+    <link rel="stylesheet" href="https://fonts.bunny.net/css?family=inter:400,500,600,700|plus-jakarta-sans:600,700,800&display=swap">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-slate-50 font-sans text-slate-700 antialiased">
@@ -20,9 +24,7 @@
 
         <div class="relative flex h-full flex-col justify-between p-12">
             <a href="{{ route('home') }}" class="flex items-center gap-3">
-                <span class="grid size-11 place-items-center rounded-xl bg-white/10 text-white ring-1 ring-white/15">
-                    <x-icon name="academic" class="size-6" />
-                </span>
+                <x-logo tone="light" class="size-11 shrink-0" />
                 <span class="text-[15px] font-bold tracking-tight text-white">{{ $profil->nama }}</span>
             </a>
 
@@ -54,9 +56,7 @@
     <div class="flex flex-col justify-center px-6 py-12 sm:px-12">
         <div class="mx-auto w-full max-w-sm">
             <div class="lg:hidden">
-                <span class="grid size-12 place-items-center rounded-xl bg-brand-700 text-white">
-                    <x-icon name="academic" class="size-6" />
-                </span>
+                <x-logo class="size-12" />
             </div>
 
             <h1 class="mt-6 text-2xl font-bold tracking-tight text-brand-950 lg:mt-0">Login Petugas</h1>

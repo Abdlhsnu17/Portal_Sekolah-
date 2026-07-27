@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Beranda') — {{ $profil->nama ?? 'Portal Sekolah' }}</title>
     <meta name="description" content="@yield('description', 'Portal informasi resmi ' . ($profil->nama ?? 'sekolah') . '.')">
+    <meta name="theme-color" content="#1f345f">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+    <link rel="stylesheet" href="https://fonts.bunny.net/css?family=inter:400,500,600,700|plus-jakarta-sans:600,700,800&display=swap">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-white font-sans text-slate-700 antialiased">
@@ -44,9 +48,7 @@
 <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur-md">
     <div class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-3.5">
         <a href="{{ route('home') }}" class="flex items-center gap-3">
-            <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-700 text-white shadow-card">
-                <x-icon name="academic" class="size-6" />
-            </span>
+            <x-logo class="size-11 shrink-0" />
             <span class="leading-tight">
                 <span class="block text-[15px] font-bold tracking-tight text-brand-950">{{ $profil->nama ?? 'Portal Sekolah' }}</span>
                 <span class="block text-xs text-slate-500">{{ $profil->jenjang ? 'Jenjang '.$profil->jenjang : 'Portal Informasi Sekolah' }}</span>
@@ -104,9 +106,7 @@
     <div class="mx-auto grid max-w-6xl gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-12">
         <div class="lg:col-span-5">
             <div class="flex items-center gap-3">
-                <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-white/10 text-white ring-1 ring-white/15">
-                    <x-icon name="academic" class="size-6" />
-                </span>
+                <x-logo tone="light" class="size-11 shrink-0" />
                 <p class="text-base font-bold text-white">{{ $profil->nama ?? 'Portal Sekolah' }}</p>
             </div>
             <p class="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">

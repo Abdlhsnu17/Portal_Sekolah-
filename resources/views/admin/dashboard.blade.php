@@ -21,15 +21,15 @@
             <div class="grid gap-3 sm:grid-cols-3 lg:min-w-[34rem]">
                 <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
                     <p class="text-xs font-semibold uppercase text-slate-500">Verifikasi</p>
-                    <p class="mt-1 tabular text-2xl font-bold text-brand-950">{{ $tingkatVerifikasi }}%</p>
+                    <p class="mt-1 metric text-2xl text-brand-950">{{ $tingkatVerifikasi }}%</p>
                 </div>
                 <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
                     <p class="text-xs font-semibold uppercase text-amber-700">Menunggu</p>
-                    <p class="mt-1 tabular text-2xl font-bold text-amber-900">{{ number_format($menunggu) }}</p>
+                    <p class="mt-1 metric text-2xl text-amber-900">{{ number_format($menunggu) }}</p>
                 </div>
                 <a href="{{ route('admin.registrations.index') }}" class="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 transition hover:border-brand-300 hover:bg-brand-100">
                     <p class="text-xs font-semibold uppercase text-brand-700">Total PSB</p>
-                    <p class="mt-1 tabular text-2xl font-bold text-brand-950">{{ number_format($statistik['pendaftar']) }}</p>
+                    <p class="mt-1 metric text-2xl text-brand-950">{{ number_format($statistik['pendaftar']) }}</p>
                 </a>
             </div>
         </div>
@@ -49,7 +49,7 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $kartu['label'] }}</p>
-                        <p class="mt-2 tabular text-3xl font-bold text-brand-950">{{ number_format($kartu['nilai']) }}</p>
+                        <p class="mt-2 metric text-3xl text-brand-950">{{ number_format($kartu['nilai']) }}</p>
                     </div>
                     <span class="grid size-9 shrink-0 place-items-center rounded-lg ring-1 {{ $kartu['tone'] }}">
                         <x-icon :name="$kartu['ikon']" class="size-4" />
@@ -71,7 +71,7 @@
             </div>
 
             {{-- Angka utama halaman ini --}}
-            <p class="mt-5 tabular text-5xl font-bold leading-none text-brand-950">{{ number_format($totalPendaftar) }}</p>
+            <p class="mt-5 metric text-5xl leading-none text-brand-950">{{ number_format($totalPendaftar) }}</p>
             <p class="mt-2 text-sm text-slate-500">pendaftar sejak awal periode</p>
 
             @php

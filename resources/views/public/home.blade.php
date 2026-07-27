@@ -69,7 +69,7 @@
                     ] as $kartu)
                         <div class="bg-brand-950/80 p-6 backdrop-blur">
                             <x-icon :name="$kartu['ikon']" class="size-5 text-brand-300" />
-                            <p class="mt-4 text-4xl font-semibold text-white">{{ number_format($kartu['nilai']) }}</p>
+                            <p class="mt-4 metric text-4xl text-white">{{ number_format($kartu['nilai']) }}</p>
                             <p class="mt-1.5 text-sm text-brand-100/60">{{ $kartu['label'] }}</p>
                         </div>
                     @endforeach

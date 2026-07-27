@@ -4,6 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Dashboard') — Panel Admin</title>
+    <meta name="theme-color" content="#111d34">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+    <link rel="stylesheet" href="https://fonts.bunny.net/css?family=inter:400,500,600,700|plus-jakarta-sans:600,700,800&display=swap">
     {{-- Dijalankan sebelum render agar sidebar tidak berkedip lebar saat pindah halaman --}}
     <script>
         (function () {
@@ -55,9 +59,7 @@
     <aside :class="sidebar && 'translate-x-0!'"
            class="admin-sidebar fixed inset-y-0 left-0 z-40 flex shrink-0 -translate-x-full flex-col overflow-y-auto overflow-x-hidden border-r border-white/10 bg-brand-950 shadow-2xl shadow-brand-950/20 transition-transform lg:static lg:translate-x-0 lg:shadow-none">
         <div class="sidebar-link flex h-16 items-center gap-3 border-b border-white/10 px-5">
-            <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-accent-400 text-brand-950 shadow-card">
-                <x-icon name="academic" class="size-5" />
-            </span>
+            <x-logo tone="light" class="size-9 shrink-0" />
             <div class="sidebar-label leading-tight">
                 <p class="whitespace-nowrap text-sm font-bold text-white">Panel Admin</p>
                 <p class="whitespace-nowrap text-[11px] font-medium text-brand-100/60">Portal Sekolah</p>
