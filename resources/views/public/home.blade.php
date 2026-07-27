@@ -43,6 +43,8 @@
                     </a>
                 </div>
 
+                <x-date-time-card tone="dark" class="mt-7 max-w-xl" />
+
                 @if ($profil?->akreditasi || $profil?->npsn)
                     <div class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/10 pt-6 text-sm text-brand-100/70">
                         @if ($profil->akreditasi)

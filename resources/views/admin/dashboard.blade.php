@@ -19,6 +19,8 @@
                 <p class="mt-1 text-sm text-slate-500">Pantau data akademik, pendaftaran, dan konten publik dari satu layar.</p>
             </div>
             <div class="grid gap-3 sm:grid-cols-3 lg:min-w-[34rem]">
+                <x-date-time-card class="sm:col-span-3" />
+
                 <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
                     <p class="text-xs font-semibold uppercase text-slate-500">Verifikasi</p>
                     <p class="mt-1 metric text-2xl text-brand-950">{{ $tingkatVerifikasi }}%</p>
