@@ -56,8 +56,7 @@
                             <figcaption class="p-3">
                                 <p class="truncate text-sm font-semibold text-brand-950">{{ $foto->judul }}</p>
                                 <p class="mt-0.5 text-xs capitalize text-slate-500">{{ $foto->kategori }}</p>
-                                <form method="POST" action="{{ route('admin.galleries.destroy', $foto) }}" class="mt-2"
-                                      onsubmit="return confirm('Hapus foto ini?')">
+                                <form method="POST" action="{{ route('admin.galleries.destroy', $foto) }}" class="mt-2" data-confirm-delete>
                                     @csrf @method('DELETE')
                                     <button aria-label="Hapus foto {{ $foto->judul }}" title="Hapus" class="inline-flex size-9 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
                                         <x-icon name="trash" class="size-5" />

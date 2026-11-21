@@ -125,6 +125,18 @@
 }
 
 @layer components {
+    .confirm-delete-dialog {
+        position: fixed;
+        inset: 0;
+        width: min(26rem, calc(100vw - 2rem));
+        max-width: calc(100vw - 2rem);
+        height: fit-content;
+        max-height: calc(100dvh - 2rem);
+        margin: auto;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
     .announcement-ticker {
         position: relative;
         z-index: 19;

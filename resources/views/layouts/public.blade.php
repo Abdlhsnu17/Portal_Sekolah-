@@ -169,5 +169,7 @@
     </div>
 </footer>
 
+<x-confirm-delete-dialog />
+
 </body>
 </html>

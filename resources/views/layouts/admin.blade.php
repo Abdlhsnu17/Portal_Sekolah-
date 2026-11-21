@@ -57,7 +57,7 @@
 
     $pemilikAkun = auth()->user();
     if ($pemilikAkun && ($pemilikAkun->teacher()->where('status', 'aktif')->exists() || $pemilikAkun->staffMember()->where('status', 'aktif')->exists())) {
-        $menu[] = ['grup' => 'Menu Utama', 'rute' => 'attendance.check-in', 'label' => 'Absen Wajah Saya', 'aktif' => 'attendance.*', 'ikon' => 'camera'];
+        $menu[] = ['grup' => 'Menu Utama', 'rute' => 'attendance.check-in', 'label' => 'Absensi', 'aktif' => 'attendance.*', 'ikon' => 'camera'];
     }
 
     $menu[] = ['grup' => 'Sistem', 'rute' => 'security.index', 'label' => 'Pengaturan', 'aktif' => ['security.*', 'admin.settings.*'], 'ikon' => 'cog'];
@@ -153,12 +153,24 @@
                                 <p class="text-sm font-bold text-brand-950">Pemberitahuan</p>
                                 <p class="text-[11px] text-slate-500">{{ $unreadNotificationCount }} belum dibaca</p>
                             </div>
-                            @if ($unreadNotificationCount)
-                                <form method="POST" action="{{ route('notifications.read-all') }}">
+                            <div class="flex items-center gap-3">
+                                @if ($unreadNotificationCount)
+                                    <form method="POST" action="{{ route('notifications.read-all') }}">
+                                        @csrf
+                                        <button class="text-xs font-semibold text-brand-700 hover:text-brand-900">Tandai semua dibaca</button>
+                                    </form>
+                                @endif
+                                @if ($headerNotifications->isNotEmpty())
+                                    <form method="POST" action="{{ route('notifications.destroy-all') }}"
+                                          data-confirm-delete
+                                          data-delete-title="Hapus semua pemberitahuan?"
+                                          data-delete-description="Seluruh pemberitahuan akan dihapus permanen dan tidak dapat dikembalikan.">
                                     @csrf
-                                    <button class="text-xs font-semibold text-brand-700 hover:text-brand-900">Tandai semua dibaca</button>
-                                </form>
-                            @endif
+                                    @method('DELETE')
+                                        <button type="submit" class="text-xs font-semibold text-rose-600 hover:text-rose-800">Hapus semua</button>
+                                    </form>
+                                @endif
+                            </div>
                         </div>
                         <div class="max-h-96 overflow-y-auto">
                             @forelse ($headerNotifications as $notification)
@@ -178,7 +190,7 @@
                                     </span>
                                   </a>
                                   @if ($notification->read_at)
-                                      <form method="POST" action="{{ route('notifications.destroy', $notification) }}" class="shrink-0">
+                                      <form method="POST" action="{{ route('notifications.destroy', $notification) }}" class="shrink-0" data-confirm-delete>
                                           @csrf
                                           @method('DELETE')
                                           <button type="submit" aria-label="Hapus pemberitahuan" title="Hapus pemberitahuan"
@@ -259,6 +271,8 @@
         </main>
     </div>
 </div>
+
+<x-confirm-delete-dialog />
 
 </body>
 </html>

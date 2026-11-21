@@ -71,8 +71,7 @@
                                         <x-icon name="pencil" class="size-5" />
                                     </a>
                                     @unless ($item->is(auth()->user()))
-                                        <form method="POST" action="{{ route('admin.users.destroy', $item) }}"
-                                              onsubmit="return confirm('Hapus pengguna ini?')">
+                                        <form method="POST" action="{{ route('admin.users.destroy', $item) }}" data-confirm-delete>
                                             @csrf @method('DELETE')
                                             <button aria-label="Hapus pengguna {{ $item->name }}" title="Hapus" class="inline-flex size-9 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
                                                 <x-icon name="trash" class="size-5" />

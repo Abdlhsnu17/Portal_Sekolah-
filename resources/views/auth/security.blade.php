@@ -32,7 +32,7 @@
             @if ($user->hasTwoFactorAuthentication())
                 <p class="mt-4 rounded-lg bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">MFA aktif sejak {{ $user->two_factor_confirmed_at->format('d M Y H:i') }}.</p>
                 @unless($user->isAdmin())
-                    <form method="POST" action="{{ route('security.mfa.disable') }}" class="mt-4 space-y-3">@csrf @method('DELETE')
+                    <form method="POST" action="{{ route('security.mfa.disable') }}" class="mt-4 space-y-3" data-confirm-delete>@csrf @method('DELETE')
                         <x-form.input name="current_password" type="password" label="Kata sandi saat ini" required />
                         <button class="rounded-lg border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600">Nonaktifkan MFA</button>
                     </form>
@@ -83,7 +83,7 @@
 
     <section x-show="tab === 'sessions'" x-cloak x-transition.opacity role="tabpanel" class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
         <div><h2 class="text-base font-bold text-brand-950">Sesi aktif</h2><p class="mt-1 text-sm text-slate-600">Keluar dari browser atau perangkat lain yang tidak dikenali.</p></div>
-            <form method="POST" action="{{ route('security.sessions.destroy') }}" class="mt-4 flex flex-wrap items-end gap-2">@csrf @method('DELETE')
+            <form method="POST" action="{{ route('security.sessions.destroy') }}" class="mt-4 flex flex-wrap items-end gap-2" data-confirm-delete>@csrf @method('DELETE')
                 <div class="min-w-[12rem] flex-1"><x-form.input name="current_password" type="password" label="Kata sandi" required /></div>
                 <button class="rounded-lg border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-600">Keluarkan sesi lain</button>
             </form>

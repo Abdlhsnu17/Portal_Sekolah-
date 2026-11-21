@@ -96,8 +96,7 @@
                     Tersedia setelah status pendaftar diubah menjadi "diterima".
                 </p>
 
-                <form method="POST" action="{{ route('admin.registrations.destroy', $item) }}" class="mt-5 border-t border-slate-100 pt-5"
-                      onsubmit="return confirm('Hapus data pendaftaran ini beserta dokumennya?')">
+                <form method="POST" action="{{ route('admin.registrations.destroy', $item) }}" class="mt-5 border-t border-slate-100 pt-5" data-confirm-delete>
                     @csrf @method('DELETE')
                     <button class="w-full rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:bg-rose-50">
                         Hapus Pendaftaran

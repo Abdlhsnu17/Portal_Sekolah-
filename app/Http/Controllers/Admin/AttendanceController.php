@@ -21,10 +21,15 @@ class AttendanceController extends Controller
         $to = $request->input('date_to', now()->toDateString());
         $query = $this->filteredQuery($request, $from, $to);
 
-        $summary = (clone $query)->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+        $summary = (clone $query)->where('approval_status', 'approved')
+            ->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
 
         return view('admin.attendances.index', [
             'items' => $query->orderByDesc('tanggal')->orderByDesc('jam_masuk')->paginate(15)->withQueryString(),
+            'requestQueue' => Attendance::with(['teacher', 'staffMember'])
+                ->where('approval_status', 'pending')
+                ->whereIn('status', ['izin', 'sakit', 'dinas'])
+                ->orderBy('tanggal')->get(),
             'summary' => $summary,
             'statuses' => Attendance::STATUSES,
             'dateFrom' => $from,
@@ -42,7 +47,7 @@ class AttendanceController extends Controller
         return response()->streamDownload(function () use ($request, $from, $to) {
             $output = fopen('php://output', 'w');
             fwrite($output, "\xEF\xBB\xBF");
-            fputcsv($output, ['Tanggal', 'NIP', 'Nama', 'Jenis', 'Jam Masuk', 'Jam Keluar', 'Status', 'Verifikasi Wajah', 'Catatan Verifikasi', 'Diverifikasi Oleh', 'Catatan', 'Dicatat Oleh']);
+            fputcsv($output, ['Tanggal', 'NIP', 'Nama', 'Jenis', 'Jam Masuk', 'Jam Keluar', 'Status', 'Status Persetujuan', 'Catatan Persetujuan', 'Verifikasi Wajah', 'Catatan Verifikasi', 'Diverifikasi Oleh', 'Catatan', 'Dicatat Oleh']);
 
             $this->filteredQuery($request, $from, $to)
                 ->orderBy('tanggal')
@@ -58,6 +63,8 @@ class AttendanceController extends Controller
                             $item->jam_masuk ? substr($item->jam_masuk, 0, 5) : '',
                             $item->jam_keluar ? substr($item->jam_keluar, 0, 5) : '',
                             ucfirst($item->status),
+                            ucfirst($item->approval_status ?? 'approved'),
+                            $this->csvCell($item->approval_note),
                             $item->face_review_status ? ucfirst($item->face_review_status) : '',
                             $this->csvCell($item->face_review_note),
                             $this->csvCell($item->faceReviewer?->name),
@@ -103,19 +110,24 @@ class AttendanceController extends Controller
 
     public function destroy(Attendance $attendance)
     {
-        if ($attendance->face_photo_path) {
-            Storage::disk('local')->delete($attendance->face_photo_path);
-        }
+        Storage::disk('local')->delete(array_filter([
+            $attendance->face_photo_path,
+            $attendance->face_checkout_photo_path,
+            $attendance->request_evidence_path,
+        ]));
         $attendance->delete();
 
         return back()->with('success', 'Catatan absensi dihapus.');
     }
 
-    public function facePhoto(Attendance $attendance)
+    public function facePhoto(Request $request, Attendance $attendance)
     {
-        abort_unless($attendance->face_photo_path && Storage::disk('local')->exists($attendance->face_photo_path), 404);
+        $path = $request->query('jenis') === 'pulang'
+            ? $attendance->face_checkout_photo_path
+            : $attendance->face_photo_path;
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
 
-        return Storage::disk('local')->response($attendance->face_photo_path);
+        return Storage::disk('local')->response($path);
     }
 
     public function reviewFace(Request $request, Attendance $attendance)
@@ -136,6 +148,33 @@ class AttendanceController extends Controller
         ]);
 
         return back()->with('success', $data['decision'] === 'verified' ? 'Bukti wajah diverifikasi.' : 'Bukti wajah ditolak.');
+    }
+
+    public function requestEvidence(Attendance $attendance)
+    {
+        abort_unless($attendance->request_evidence_path && Storage::disk('local')->exists($attendance->request_evidence_path), 404);
+
+        return Storage::disk('local')->response($attendance->request_evidence_path);
+    }
+
+    public function reviewRequest(Request $request, Attendance $attendance)
+    {
+        abort_unless($attendance->approval_status === 'pending', 422, 'Pengajuan ini sudah ditinjau.');
+        abort_unless(in_array($attendance->status, ['izin', 'sakit', 'dinas'], true), 422, 'Catatan ini bukan pengajuan pegawai.');
+
+        $data = $request->validate([
+            'decision' => ['required', Rule::in(['approved', 'rejected'])],
+            'approval_note' => [Rule::requiredIf($request->input('decision') === 'rejected'), 'nullable', 'string', 'max:500'],
+        ], ['approval_note.required' => 'Tuliskan alasan jika pengajuan ditolak.']);
+
+        $attendance->update([
+            'approval_status' => $data['decision'],
+            'approval_note' => $data['approval_note'] ?? null,
+            'request_reviewed_by' => $request->user()->id,
+            'request_reviewed_at' => now(),
+        ]);
+
+        return back()->with('success', $data['decision'] === 'approved' ? 'Pengajuan absensi disetujui.' : 'Pengajuan absensi ditolak.');
     }
 
     private function validated(Request $request, ?Attendance $attendance = null): array

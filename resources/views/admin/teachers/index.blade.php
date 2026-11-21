@@ -88,8 +88,7 @@
                                     <a href="{{ route('admin.teachers.edit', $item) }}" aria-label="Ubah data guru {{ $item->nama }}" title="Ubah" class="inline-flex size-9 items-center justify-center rounded-lg text-brand-700 transition hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
                                         <x-icon name="pencil" class="size-5" />
                                     </a>
-                                    <form method="POST" action="{{ route('admin.teachers.destroy', $item) }}"
-                                          onsubmit="return confirm('Hapus data guru ini?')">
+                                    <form method="POST" action="{{ route('admin.teachers.destroy', $item) }}" data-confirm-delete>
                                         @csrf @method('DELETE')
                                         <button aria-label="Hapus data guru {{ $item->nama }}" title="Hapus" class="inline-flex size-9 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
                                             <x-icon name="trash" class="size-5" />

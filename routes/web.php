@@ -64,6 +64,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 
 Route::prefix('pemberitahuan')->name('notifications.')->middleware(['auth', 'aktif'])->group(function () {
     Route::post('/baca-semua', [NotificationController::class, 'readAll'])->name('read-all');
+    Route::delete('/hapus-semua', [NotificationController::class, 'destroyAll'])->name('destroy-all');
     Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
     Route::get('/{notification}', [NotificationController::class, 'read'])->name('read');
 });
@@ -79,7 +80,11 @@ Route::prefix('keamanan')->name('security.')->middleware(['auth', 'aktif'])->gro
 
 Route::prefix('kehadiran')->name('attendance.')->middleware(['auth', 'aktif', 'mfa'])->group(function () {
     Route::get('/', [AttendanceCheckInController::class, 'create'])->name('check-in');
+    Route::get('/riwayat', [AttendanceCheckInController::class, 'history'])->name('history');
     Route::post('/', [AttendanceCheckInController::class, 'store'])->middleware('throttle:10,1')->name('store');
+    Route::post('/pulang', [AttendanceCheckInController::class, 'checkOut'])->middleware('throttle:10,1')->name('check-out');
+    Route::put('/koreksi', [AttendanceCheckInController::class, 'correct'])->middleware('throttle:5,1')->name('correct');
+    Route::post('/pengajuan', [AttendanceCheckInController::class, 'requestAbsence'])->middleware('throttle:5,1')->name('request');
 });
 
 /*
@@ -113,6 +118,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa'])->gr
     Route::get('attendances/export', [Admin\AttendanceController::class, 'export'])->name('attendances.export')->middleware('admin');
     Route::get('attendances/{attendance}/face', [Admin\AttendanceController::class, 'facePhoto'])->name('attendances.face')->middleware('admin');
     Route::put('attendances/{attendance}/face-review', [Admin\AttendanceController::class, 'reviewFace'])->name('attendances.face-review')->middleware('admin');
+    Route::put('attendances/{attendance}/request-review', [Admin\AttendanceController::class, 'reviewRequest'])->name('attendances.request-review')->middleware('admin');
+    Route::get('attendances/{attendance}/request-evidence', [Admin\AttendanceController::class, 'requestEvidence'])->name('attendances.request-evidence')->middleware('admin');
     Route::resource('attendances', Admin\AttendanceController::class)->except('show')->middleware('admin');
 
     // Berita & pengumuman
