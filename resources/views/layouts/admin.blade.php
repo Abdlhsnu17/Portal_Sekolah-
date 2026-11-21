@@ -41,26 +41,30 @@
 
 @php
     $menu = [
-        ['grup' => 'Menu Utama', 'rute' => 'admin.dashboard', 'label' => 'Dashboard', 'aktif' => 'admin.dashboard', 'ikon' => 'home'],
-        ['grup' => 'Menu Utama', 'rute' => 'admin.registrations.index', 'label' => 'Pendaftaran', 'aktif' => 'admin.registrations.*', 'ikon' => 'clipboard'],
-        ['grup' => 'Menu Utama', 'rute' => 'admin.students.index', 'label' => 'Data Siswa', 'aktif' => 'admin.students.*', 'ikon' => 'users'],
-        ['grup' => 'Konten Situs', 'rute' => 'admin.profile.edit', 'label' => 'Profil Sekolah', 'aktif' => 'admin.profile.*', 'ikon' => 'building'],
-        ['grup' => 'Konten Situs', 'rute' => 'admin.announcements.index', 'label' => 'Berita', 'aktif' => 'admin.announcements.*', 'ikon' => 'newspaper'],
-        ['grup' => 'Konten Situs', 'rute' => 'admin.galleries.index', 'label' => 'Galeri', 'aktif' => 'admin.galleries.*', 'ikon' => 'photo'],
+        ['grup' => 'Beranda', 'rute' => 'admin.dashboard', 'label' => 'Dashboard', 'aktif' => 'admin.dashboard', 'ikon' => 'home'],
+        ['grup' => 'Penerimaan Siswa', 'rute' => 'admin.registrations.index', 'label' => 'Pendaftaran', 'aktif' => 'admin.registrations.*', 'ikon' => 'clipboard'],
+        ['grup' => 'Penerimaan Siswa', 'rute' => 'admin.students.index', 'label' => 'Data Siswa', 'aktif' => 'admin.students.*', 'ikon' => 'users'],
     ];
 
     if (auth()->user()?->isAdmin()) {
-        $menu[] = ['grup' => 'Menu Utama', 'rute' => 'admin.staff.index', 'label' => 'Data Staff', 'aktif' => ['admin.staff.*', 'admin.teachers.*'], 'ikon' => 'users'];
-        $menu[] = ['grup' => 'Menu Utama', 'rute' => 'admin.attendances.index', 'label' => 'Absensi Pegawai', 'aktif' => 'admin.attendances.*', 'ikon' => 'clock'];
-        $menu[] = ['grup' => 'Sistem', 'rute' => 'admin.users.index', 'label' => 'Pengguna', 'aktif' => 'admin.users.*', 'ikon' => 'users'];
+        $menu[] = ['grup' => 'Kepegawaian', 'rute' => 'admin.staff.index', 'label' => 'Data Staf', 'aktif' => ['admin.staff.*', 'admin.teachers.*'], 'ikon' => 'users'];
+        $menu[] = ['grup' => 'Kepegawaian', 'rute' => 'admin.attendances.index', 'label' => 'Absensi Pegawai', 'aktif' => 'admin.attendances.*', 'ikon' => 'clock'];
     }
 
     $pemilikAkun = auth()->user();
     if ($pemilikAkun && ($pemilikAkun->teacher()->where('status', 'aktif')->exists() || $pemilikAkun->staffMember()->where('status', 'aktif')->exists())) {
-        $menu[] = ['grup' => 'Menu Utama', 'rute' => 'attendance.check-in', 'label' => 'Absensi', 'aktif' => 'attendance.*', 'ikon' => 'camera'];
+        $menu[] = ['grup' => 'Kepegawaian', 'rute' => 'attendance.check-in', 'label' => 'Absensi', 'aktif' => 'attendance.*', 'ikon' => 'camera'];
     }
 
-    $menu[] = ['grup' => 'Sistem', 'rute' => 'security.index', 'label' => 'Pengaturan', 'aktif' => ['security.*', 'admin.settings.*'], 'ikon' => 'cog'];
+    $menu[] = ['grup' => 'Konten Website', 'rute' => 'admin.profile.edit', 'label' => 'Profil Sekolah', 'aktif' => 'admin.profile.*', 'ikon' => 'building'];
+    $menu[] = ['grup' => 'Konten Website', 'rute' => 'admin.announcements.index', 'label' => 'Berita', 'aktif' => 'admin.announcements.*', 'ikon' => 'newspaper'];
+    $menu[] = ['grup' => 'Konten Website', 'rute' => 'admin.galleries.index', 'label' => 'Galeri', 'aktif' => 'admin.galleries.*', 'ikon' => 'photo'];
+
+    if (auth()->user()?->isAdmin()) {
+        $menu[] = ['grup' => 'Administrasi', 'rute' => 'admin.users.index', 'label' => 'Pengguna', 'aktif' => 'admin.users.*', 'ikon' => 'users'];
+    }
+
+    $menu[] = ['grup' => 'Administrasi', 'rute' => 'security.index', 'label' => 'Pengaturan', 'aktif' => ['security.*', 'admin.settings.*'], 'ikon' => 'cog'];
 @endphp
 
 <div class="admin-layout flex overflow-hidden">

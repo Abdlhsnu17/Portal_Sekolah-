@@ -45,9 +45,9 @@
                                         </p>
                                         <p class="truncate text-xs text-slate-500">{{ $item->email }}</p>
                                         @if ($item->teacher)
-                                            <p class="truncate text-xs font-medium text-emerald-700">Guru: {{ $item->teacher->nama }} · {{ $item->teacher->nip }}</p>
+                                            <p class="truncate text-xs font-medium text-slate-500">NIP {{ $item->teacher->nip }}</p>
                                         @elseif ($item->staffMember)
-                                            <p class="truncate text-xs font-medium text-sky-700">Staf: {{ $item->staffMember->nama }} · {{ $item->staffMember->nip }}</p>
+                                            <p class="truncate text-xs font-medium text-slate-500">NIP {{ $item->staffMember->nip }}</p>
                                         @endif
                                     </div>
                                 </div>

@@ -49,8 +49,17 @@ class AttendanceCheckInController extends Controller
     {
         [$type, $person] = $this->personFor($request);
         $month = $request->query('bulan', now()->format('Y-m'));
+        $status = $request->query('status');
+        $search = trim((string) $request->query('q', ''));
+        $order = $request->query('urut', 'desc');
         if (! preg_match('/^\\d{4}-(0[1-9]|1[0-2])$/', $month)) {
             $month = now()->format('Y-m');
+        }
+        if (! in_array($status, ['hadir', 'izin', 'sakit', 'alpa', 'dinas', 'belum_absen'], true)) {
+            $status = null;
+        }
+        if (! in_array($order, ['asc', 'desc'], true)) {
+            $order = 'desc';
         }
 
         $start = Carbon::createFromFormat('!Y-m', $month);
@@ -61,16 +70,47 @@ class AttendanceCheckInController extends Controller
             ->get()
             ->keyBy(fn (Attendance $attendance) => $attendance->tanggal->toDateString());
 
-        $days = collect(range(1, $start->daysInMonth))->map(function (int $day) use ($start, $attendances) {
+        $allDays = collect(range(1, $start->daysInMonth))->map(function (int $day) use ($start, $attendances) {
             $date = $start->copy()->day($day);
 
             return [
                 'date' => $date,
                 'attendance' => $attendances->get($date->toDateString()),
             ];
-        })->reverse()->values();
+        });
 
-        return view('attendance.history', compact('type', 'person', 'month', 'start', 'days'));
+        $summary = [
+            'hadir' => $allDays->filter(fn (array $day) => $day['attendance']?->status === 'hadir')->count(),
+            'izin' => $allDays->filter(fn (array $day) => $day['attendance']?->status === 'izin')->count(),
+            'sakit' => $allDays->filter(fn (array $day) => $day['attendance']?->status === 'sakit')->count(),
+            'alpa' => $allDays->filter(fn (array $day) => $day['attendance']?->status === 'alpa')->count(),
+            'dinas' => $allDays->filter(fn (array $day) => $day['attendance']?->status === 'dinas')->count(),
+            'belum_absen' => $allDays->filter(fn (array $day) => $day['attendance'] === null)->count(),
+        ];
+
+        $days = $allDays
+            ->filter(function (array $day) use ($status, $search) {
+                $attendanceStatus = $day['attendance']?->status;
+                if ($status && ($status === 'belum_absen' ? $attendanceStatus !== null : $attendanceStatus !== $status)) {
+                    return false;
+                }
+
+                if ($search === '') {
+                    return true;
+                }
+
+                $haystack = strtolower(implode(' ', [
+                    $day['date']->toDateString(),
+                    $day['date']->translatedFormat('l d F Y'),
+                    $attendanceStatus ?? 'belum absen',
+                ]));
+
+                return str_contains($haystack, strtolower($search));
+            })
+            ->sortBy('date', SORT_REGULAR, $order === 'desc')
+            ->values();
+
+        return view('attendance.history', compact('type', 'person', 'month', 'start', 'days', 'summary', 'status', 'search', 'order'));
     }
 
     public function store(Request $request)

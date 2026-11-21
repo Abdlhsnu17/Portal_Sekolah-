@@ -6,6 +6,7 @@ use App\Models\Announcement;
 use App\Models\Gallery;
 use App\Models\Registration;
 use App\Models\SchoolProfile;
+use App\Models\StaffMember;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
@@ -60,7 +61,7 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        User::updateOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@sekolah.test'],
             [
                 'name' => 'Administrator Sekolah',
@@ -68,6 +69,21 @@ class DatabaseSeeder extends Seeder
                 'role' => 'admin',
                 'telepon' => '081234567890',
                 'is_active' => true,
+            ]
+        );
+
+        StaffMember::updateOrCreate(
+            ['nip' => '198400001201001'],
+            [
+                'user_id' => $admin->id,
+                'nama' => $admin->name,
+                'email' => $admin->email,
+                'telepon' => $admin->telepon,
+                'jenis_kelamin' => 'L',
+                'jabatan' => 'Administrator Sekolah',
+                'tanggal_bergabung' => now()->subYears(5)->toDateString(),
+                'alamat' => 'Jakarta Timur',
+                'status' => 'aktif',
             ]
         );
 

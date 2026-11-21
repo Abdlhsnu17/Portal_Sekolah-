@@ -95,6 +95,23 @@ class StaffMemberController extends Controller
         ]);
     }
 
+    public function createOwnAttendanceProfile(Request $request)
+    {
+        abort_if($request->user()->staffMember || $request->user()->teacher, 403, 'Akun ini sudah memiliki profil pegawai.');
+
+        return view('admin.staff.form', [
+            'item' => new StaffMember([
+                'nama' => $request->user()->name,
+                'email' => $request->user()->email,
+                'telepon' => $request->user()->telepon,
+                'status' => 'aktif',
+                'jenis_kelamin' => 'L',
+                'jabatan' => 'Administrator Sekolah',
+            ]),
+            'isOwnAttendanceProfile' => true,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $type = $request->validate([
@@ -111,6 +128,25 @@ class StaffMemberController extends Controller
         StaffMember::create($this->validated($request));
 
         return redirect()->route('admin.staff.index')->with('success', 'Data tenaga kependidikan ditambahkan.');
+    }
+
+    public function storeOwnAttendanceProfile(Request $request)
+    {
+        abort_if($request->user()->staffMember || $request->user()->teacher, 403, 'Akun ini sudah memiliki profil pegawai.');
+
+        $request->merge([
+            'nama' => $request->user()->name,
+            'email' => $request->user()->email,
+            'telepon' => $request->user()->telepon,
+            'jabatan' => 'Administrator Sekolah',
+            'status' => 'aktif',
+        ]);
+
+        StaffMember::create($this->validated($request) + [
+            'user_id' => $request->user()->id,
+        ]);
+
+        return redirect()->route('attendance.check-in')->with('success', 'Profil pegawai dibuat. Anda sekarang dapat melakukan absensi pribadi.');
     }
 
     public function edit(StaffMember $staff)

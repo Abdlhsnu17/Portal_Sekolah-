@@ -3,6 +3,16 @@
 @section('title', 'Absensi Pegawai')
 
 @section('content')
+    @if (auth()->user()->isAdmin() && ! auth()->user()->staffMember && ! auth()->user()->teacher)
+        <section class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-4">
+            <div>
+                <h2 class="font-bold text-brand-950">Absensi pribadi belum aktif</h2>
+                <p class="mt-1 text-sm text-brand-800">Lengkapi identitas kepegawaian agar akun administrator ini dapat absen masuk dan pulang.</p>
+            </div>
+            <a href="{{ route('admin.staff.activate-attendance.create') }}" class="admin-primary">Aktifkan absensi saya</a>
+        </section>
+    @endif
+
     @if ($requestQueue->isNotEmpty())
         <section class="mb-4 rounded-2xl border border-amber-200 bg-white shadow-card">
             <div class="border-b border-amber-100 bg-amber-50 px-4 py-3">

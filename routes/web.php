@@ -111,6 +111,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa'])->gr
     Route::resource('teachers', Admin\TeacherController::class)->except('show');
 
     // Tenaga kependidikan (khusus admin)
+    Route::get('staff/aktifkan-absensi-saya', [Admin\StaffMemberController::class, 'createOwnAttendanceProfile'])->middleware('admin')->name('staff.activate-attendance.create');
+    Route::post('staff/aktifkan-absensi-saya', [Admin\StaffMemberController::class, 'storeOwnAttendanceProfile'])->middleware('admin')->name('staff.activate-attendance.store');
     Route::resource('staff', Admin\StaffMemberController::class)->except('show')->middleware('admin');
     Route::post('/staff/akun-guru', [Admin\StaffMemberController::class, 'createTeacherAccounts'])->middleware('admin')->name('staff.teacher-accounts');
 

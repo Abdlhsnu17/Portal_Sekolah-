@@ -1,16 +1,20 @@
 @extends('layouts.admin')
 
-@section('title', $item->exists ? 'Ubah Staff Non-pengajar' : 'Tambah Staff')
+@section('title', ($isOwnAttendanceProfile ?? false) ? 'Aktifkan Absensi Saya' : ($item->exists ? 'Ubah Staff Non-pengajar' : 'Tambah Staff'))
 
 @section('content')
-    <a href="{{ route('admin.staff.index') }}" class="text-sm font-medium text-slate-500 hover:text-brand-700">&larr; Kembali ke data staff</a>
+    <a href="{{ ($isOwnAttendanceProfile ?? false) ? route('admin.attendances.index') : route('admin.staff.index') }}" class="text-sm font-medium text-slate-500 hover:text-brand-700">&larr; Kembali</a>
 
-    <form method="POST" action="{{ $item->exists ? route('admin.staff.update', $item) : route('admin.staff.store') }}"
+    <form method="POST" action="{{ ($isOwnAttendanceProfile ?? false) ? route('admin.staff.activate-attendance.store') : ($item->exists ? route('admin.staff.update', $item) : route('admin.staff.store')) }}"
           class="mt-4 max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
         @csrf
         @if ($item->exists) @method('PUT') @endif
 
-        @if (! $item->exists)
+        @if (($isOwnAttendanceProfile ?? false))
+            <div class="mb-6 rounded-xl border border-brand-100 bg-brand-50 p-4 text-sm text-brand-900">
+                Lengkapi NIP dan jenis kelamin untuk mengaktifkan absensi pribadi. Nama, email, jabatan, dan status mengikuti akun administrator Anda.
+            </div>
+        @elseif (! $item->exists)
             <div class="admin-form-section">
                 <div class="admin-form-heading"><p>Jenis staff</p><p>Pilih jenis yang benar agar data masuk ke daftar yang sesuai.</p></div>
                 <x-form.select name="employment_type" label="Jenis Staff" required
@@ -38,9 +42,11 @@
             <div class="admin-form-heading"><p>Identitas dan kontak</p><p>Data tenaga kependidikan, terpisah dari hak akses akun.</p></div>
             <div class="grid gap-5 sm:grid-cols-2">
                 <x-form.input name="nip" label="NIP" required :value="$item->nip" />
-                <x-form.input name="nama" label="Nama Lengkap" required :value="$item->nama" />
-                <x-form.input name="email" label="Email" type="email" :value="$item->email" />
-                <x-form.input name="telepon" label="Telepon" :value="$item->telepon" />
+                @unless ($isOwnAttendanceProfile ?? false)
+                    <x-form.input name="nama" label="Nama Lengkap" required :value="$item->nama" />
+                    <x-form.input name="email" label="Email" type="email" :value="$item->email" />
+                    <x-form.input name="telepon" label="Telepon" :value="$item->telepon" />
+                @endunless
                 <x-form.select name="jenis_kelamin" label="Jenis Kelamin" required :value="$item->jenis_kelamin" :options="['L' => 'Laki-laki', 'P' => 'Perempuan']" />
             </div>
         </div>
@@ -48,14 +54,18 @@
         <div class="admin-form-section">
             <div class="admin-form-heading"><p>Kepegawaian</p><p>Jabatan dan status tenaga kependidikan saat ini.</p></div>
             <div class="grid gap-5 sm:grid-cols-2">
-                @if (! $item->exists)
+        @if (! $item->exists && ! ($isOwnAttendanceProfile ?? false))
                     <div data-teacher-field class="hidden sm:col-span-2">
                         <x-form.input name="mata_pelajaran" label="Mata Pelajaran (khusus guru)" :value="old('mata_pelajaran')" />
                     </div>
                 @endif
-                <x-form.input name="jabatan" label="Jabatan" :value="$item->jabatan" placeholder="Contoh: Tata Usaha" />
+                @unless ($isOwnAttendanceProfile ?? false)
+                    <x-form.input name="jabatan" label="Jabatan" :value="$item->jabatan" placeholder="Contoh: Tata Usaha" />
+                @endunless
                 <x-form.input name="tanggal_bergabung" label="Tanggal Bergabung" type="date" :value="optional($item->tanggal_bergabung)->format('Y-m-d')" />
-                <x-form.select name="status" label="Status" required :value="$item->status" :options="['aktif' => 'Aktif', 'cuti' => 'Cuti', 'nonaktif' => 'Nonaktif']" />
+                @unless ($isOwnAttendanceProfile ?? false)
+                    <x-form.select name="status" label="Status" required :value="$item->status" :options="['aktif' => 'Aktif', 'cuti' => 'Cuti', 'nonaktif' => 'Nonaktif']" />
+                @endunless
                 <x-form.textarea name="alamat" label="Alamat" :value="$item->alamat" class="sm:col-span-2" />
             </div>
         </div>

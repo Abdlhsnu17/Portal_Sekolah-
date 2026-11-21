@@ -4,26 +4,29 @@
 
 @section('content')
     <div x-data="{ tab: ['absen', 'riwayat', 'pengajuan'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'absen', select(value) { this.tab = value; history.replaceState(null, '', `#${value}`) } }"
-         class="mx-auto grid max-w-5xl items-start gap-4 lg:grid-cols-[13rem_minmax(0,1fr)]">
-        <nav class="flex gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-white p-2 shadow-card lg:sticky lg:top-28 lg:flex-col lg:overflow-visible" role="tablist" aria-label="Bagian absensi">
-            <button type="button" role="tab" @click="select('absen')" :aria-selected="tab === 'absen'"
-                    :class="tab === 'absen' ? 'bg-brand-50 text-brand-800 ring-1 ring-brand-100' : 'text-slate-600 hover:bg-slate-50 hover:text-brand-800'"
-                    class="flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition lg:w-full">
-                <x-icon name="camera" class="size-4 shrink-0" /><span>Absensi hari ini</span>
-            </button>
-            <button type="button" role="tab" @click="select('riwayat')" :aria-selected="tab === 'riwayat'"
-                    :class="tab === 'riwayat' ? 'bg-brand-50 text-brand-800 ring-1 ring-brand-100' : 'text-slate-600 hover:bg-slate-50 hover:text-brand-800'"
-                    class="flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition lg:w-full">
-                <x-icon name="clock" class="size-4 shrink-0" /><span>Riwayat bulanan</span>
-            </button>
-            <button type="button" role="tab" @click="select('pengajuan')" :aria-selected="tab === 'pengajuan'"
-                    :class="tab === 'pengajuan' ? 'bg-brand-50 text-brand-800 ring-1 ring-brand-100' : 'text-slate-600 hover:bg-slate-50 hover:text-brand-800'"
-                    class="flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition lg:w-full">
-                <x-icon name="clipboard" class="size-4 shrink-0" /><span>Ajukan Izin/Sakit/Dinas</span>
-            </button>
-        </nav>
+         class="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+        <div class="border-b border-slate-100 px-6 py-5">
+            <h2 class="text-base font-bold text-brand-950">Absensi</h2>
+            <p class="mt-1 text-sm text-slate-600">Catat kehadiran, lihat riwayat, dan ajukan ketidakhadiran.</p>
+        </div>
 
-        <div class="min-w-0">
+        <div class="grid lg:grid-cols-[14rem_1fr]">
+            <nav class="flex gap-2 overflow-x-auto border-b border-slate-100 bg-slate-50 p-3 lg:flex-col lg:border-b-0 lg:border-r" role="tablist" aria-label="Bagian absensi">
+                @foreach ([
+                    ['id' => 'absen', 'label' => 'Absensi', 'desc' => 'Kehadiran hari ini'],
+                    ['id' => 'riwayat', 'label' => 'Riwayat', 'desc' => 'Rekap absensi bulanan'],
+                    ['id' => 'pengajuan', 'label' => 'Pengajuan', 'desc' => 'Izin, sakit, atau dinas'],
+                ] as $tabItem)
+                    <button type="button" role="tab" @click="select('{{ $tabItem['id'] }}')" :aria-selected="tab === '{{ $tabItem['id'] }}'"
+                            :class="tab === '{{ $tabItem['id'] }}' ? 'border-brand-200 bg-white text-brand-950 shadow-card' : 'border-transparent text-slate-600 hover:bg-white/70 hover:text-brand-900'"
+                            class="min-w-40 rounded-lg border px-4 py-3 text-left transition lg:min-w-0">
+                        <span class="block text-sm font-bold">{{ $tabItem['label'] }}</span>
+                        <span class="mt-0.5 block text-xs text-slate-500">{{ $tabItem['desc'] }}</span>
+                    </button>
+                @endforeach
+            </nav>
+
+            <div class="min-w-0 p-6">
         <section x-show="tab === 'absen'" x-cloak x-transition.opacity role="tabpanel">
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
             <div class="flex items-center justify-between gap-4 border-b border-slate-100 pb-5">
@@ -191,8 +194,26 @@
                 </div>
                 <a href="{{ route('attendance.history') }}" class="text-sm font-semibold text-brand-700 hover:text-brand-900">Pilih bulan lain →</a>
             </div>
+            @php
+                $ringkasanRiwayat = [
+                    'hadir' => collect($days)->filter(fn (array $day) => $day['attendance']?->status === 'hadir')->count(),
+                    'izin' => collect($days)->filter(fn (array $day) => $day['attendance']?->status === 'izin')->count(),
+                    'sakit' => collect($days)->filter(fn (array $day) => $day['attendance']?->status === 'sakit')->count(),
+                    'alpa' => collect($days)->filter(fn (array $day) => $day['attendance']?->status === 'alpa')->count(),
+                    'dinas' => collect($days)->filter(fn (array $day) => $day['attendance']?->status === 'dinas')->count(),
+                    'belum_absen' => collect($days)->filter(fn (array $day) => $day['attendance'] === null)->count(),
+                ];
+            @endphp
+            <div class="grid grid-cols-2 gap-2 border-b border-slate-100 bg-slate-50/70 p-4 sm:grid-cols-3 lg:grid-cols-6">
+                @foreach (['hadir' => ['Hadir', 'text-emerald-700'], 'izin' => ['Izin', 'text-sky-700'], 'sakit' => ['Sakit', 'text-amber-700'], 'alpa' => ['Alpa', 'text-rose-700'], 'dinas' => ['Dinas', 'text-violet-700'], 'belum_absen' => ['Belum absen', 'text-slate-700']] as $key => [$label, $textClass])
+                    <div class="rounded-lg border border-slate-200 bg-white px-3 py-2.5">
+                        <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">{{ $label }}</p>
+                        <p class="mt-1 metric text-xl {{ $textClass }}">{{ number_format($ringkasanRiwayat[$key]) }}</p>
+                    </div>
+                @endforeach
+            </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
+                <table data-smart-table data-table-name="riwayat-absensi-bulan-ini" class="w-full min-w-[760px] text-left text-sm">
                     <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                         <tr><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Masuk</th><th class="px-4 py-3">Pulang</th><th class="px-4 py-3">Bukti pulang</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Verifikasi wajah</th></tr>
                     </thead>
@@ -219,9 +240,12 @@
                     </tbody>
                 </table>
             </div>
+            <div class="smart-table-footer border-t border-slate-100 p-4">
+                <p class="text-xs font-medium text-slate-500">{{ $start->daysInMonth }} hari pada periode ini · gunakan “Pilih bulan lain” untuk pencarian, filter, dan urutan lengkap.</p>
+            </div>
         </section>
 
-        <section x-show="tab === 'pengajuan'" x-cloak x-transition.opacity role="tabpanel" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
+        <section x-show="tab === 'pengajuan'" x-cloak x-init="$nextTick(() => $el.removeAttribute('x-cloak'))" x-transition.opacity role="tabpanel" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
             <div class="border-b border-slate-100 pb-4">
                 <p class="eyebrow text-slate-400">{{ $type === 'teacher' ? 'Guru' : 'Tenaga Kependidikan' }}</p>
                 <h2 class="mt-1 text-xl font-bold text-brand-950">Ajukan Izin, Sakit, atau Dinas</h2>
@@ -257,6 +281,7 @@
                 <button class="admin-primary sm:col-span-2 sm:justify-self-start">Kirim pengajuan</button>
             </form>
         </section>
+            </div>
         </div>
     </div>
 @endsection
