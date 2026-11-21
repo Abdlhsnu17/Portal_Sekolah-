@@ -2,144 +2,157 @@
 
 ## 1. Ringkasan
 
-Portal Sekolah adalah aplikasi web untuk membantu sekolah mempublikasikan informasi resmi dan mengelola operasional data dasar sekolah. Produk ini menggabungkan website publik, sistem penerimaan siswa baru, serta panel admin untuk staf dan administrator.
+Portal Sekolah adalah aplikasi web berbasis Laravel yang menyediakan website profil sekolah, penerimaan siswa baru (PSB), dan panel administrasi. Produk menghubungkan pengunjung, calon siswa, staf, guru, dan administrator dalam satu portal.
 
 ## 2. Tujuan Produk
 
-- Menyediakan satu portal resmi untuk informasi sekolah.
-- Memudahkan calon siswa melakukan pendaftaran secara daring.
-- Memudahkan panitia PSB memverifikasi data dan dokumen pendaftar.
-- Memusatkan pengelolaan data siswa, guru, berita, galeri, profil sekolah, dan pengguna.
-- Memberikan dashboard admin yang informatif dan profesional untuk pemantauan operasional.
+- Menjadikan situs sebagai sumber informasi resmi sekolah.
+- Memudahkan pendaftaran dan pengecekan status PSB secara daring.
+- Membantu panitia memverifikasi data dan dokumen pendaftar.
+- Memusatkan pengelolaan siswa, guru, konten, galeri, profil sekolah, dan pengguna.
+- Menyediakan pemantauan operasional melalui dashboard admin yang responsif.
+- Melindungi sesi dan akun pengelola melalui kontrol akses serta fitur keamanan.
 
 ## 3. Pengguna
 
-| Pengguna | Kebutuhan Utama |
+| Pengguna | Kebutuhan utama |
 | --- | --- |
-| Pengunjung umum | Melihat profil sekolah, berita, agenda, dan galeri |
-| Calon siswa/orang tua | Mendaftar PSB, mengunggah dokumen, dan mengecek status |
-| Staf sekolah | Mengelola pendaftaran, siswa, guru, konten, dan galeri |
-| Admin | Mengelola seluruh data termasuk pengguna dan profil sekolah |
-| Guru | Akses panel sesuai kebutuhan pengembangan berikutnya |
+| Pengunjung umum | Melihat profil sekolah, berita, agenda, galeri, dan informasi PSB |
+| Calon siswa atau orang tua | Mendaftar, mengunggah dokumen, dan mengecek status |
+| Staf sekolah | Mengelola pendaftaran, siswa, guru, berita, galeri, dan profil |
+| Admin | Mengelola seluruh modul, termasuk pengguna dan pengaturan akun |
+| Guru | Memiliki akun dan role aplikasi; dashboard khusus guru belum menjadi scope saat ini |
 
 ## 4. Scope Fitur
 
 ### 4.1 Website Publik
 
-- Beranda dengan ringkasan profil, berita terbaru, galeri, dan statistik sekolah.
-- Halaman profil sekolah berisi identitas, visi, misi, sejarah, dan kontak.
-- Halaman berita dan detail berita.
-- Halaman galeri dengan dokumentasi kegiatan, fasilitas, prestasi, dan ekstrakurikuler.
-- Navigasi responsif untuk desktop dan mobile.
+- Beranda, profil sekolah, daftar/detail berita, dan galeri.
+- Ringkasan profil, statistik sekolah, berita terbaru, dan dokumentasi kegiatan.
+- Halaman publik dapat diakses tanpa login.
+- Navigasi responsif pada desktop dan perangkat mobile.
 
 ### 4.2 Penerimaan Siswa Baru
 
-- Formulir pendaftaran calon siswa.
-- Nomor pendaftaran otomatis dengan format `PSB-{tahun}-{urut}`.
+- Formulir pendaftaran dengan validasi server.
+- Nomor pendaftaran otomatis dengan format `PSB-{tahun}-{nomor urut}`.
 - Status pendaftaran: `menunggu`, `diverifikasi`, `diterima`, dan `ditolak`.
-- Halaman cek status berdasarkan nomor pendaftaran.
-- Unggah dan hapus dokumen pendaftaran.
-- Catatan status dari panitia untuk calon siswa.
+- Pengecekan status berdasarkan nomor pendaftaran dan email.
+- Unggah, unduh, dan hapus dokumen pendaftaran.
+- Catatan panitia yang dapat dilihat bersama status pendaftaran.
+- Batas kepemilikan dokumen dijaga melalui bukti sesi setelah calon siswa melakukan pendaftaran atau pengecekan status.
 
 ### 4.3 Panel Admin
 
-- Login dan logout pengguna.
-- Dashboard dengan:
-  - jumlah siswa aktif,
-  - jumlah guru aktif,
-  - jumlah pendaftar,
-  - jumlah pendaftar menunggu,
-  - jumlah konten,
-  - jumlah galeri,
-  - tingkat verifikasi,
-  - pendaftar terbaru,
-  - konten terbaru.
-- Sidebar admin responsif dan dapat diciutkan di layar desktop.
-- Header admin dengan informasi pengguna aktif.
+- Autentikasi login dan logout.
+- Dashboard dengan statistik siswa aktif, guru aktif, pendaftar, pendaftar menunggu, konten, galeri, dan tingkat verifikasi.
+- Daftar pendaftar terbaru dan konten terbaru.
+- Sidebar responsif yang dapat diciutkan pada desktop.
+- Header dengan tanggal, waktu, dan menu akun.
+- Logo monogram pada bagian atas sidebar tanpa teks tambahan.
 
 ### 4.4 Manajemen Pendaftaran
 
-- Daftar pendaftar dengan filter status dan pencarian.
-- Detail pendaftar.
-- Update status dan catatan pendaftar.
+- Daftar pendaftar dengan pencarian dan filter status.
+- Halaman detail pendaftar beserta dokumen.
+- Pembaruan status dan catatan verifikasi.
 - Konversi pendaftar diterima menjadi data siswa.
-- Hapus data pendaftaran.
+- Penghapusan data pendaftaran beserta dokumen terkait.
 
-### 4.5 Manajemen Data Master
+### 4.5 Manajemen Data
 
 - CRUD siswa.
 - CRUD guru.
 - CRUD berita, agenda, dan pengumuman.
-- Upload dan hapus foto galeri.
+- Unggah dan hapus foto galeri.
 - Edit profil sekolah.
-- CRUD pengguna khusus admin.
+- CRUD pengguna yang dibatasi untuk role admin.
+
+### 4.6 Keamanan Akun
+
+- Pengguna nonaktif tidak dapat masuk.
+- Login gagal dibatasi dan menampilkan CAPTCHA setelah beberapa percobaan.
+- Pengelolaan kata sandi dengan validasi kekuatan dan sesi lain dapat dicabut.
+- Riwayat login perangkat dan audit keamanan tersedia di halaman keamanan akun.
+- Dukungan TOTP autentikasi dua faktor dan kode pemulihan tersedia dalam implementasi.
+- MFA dapat diaktifkan melalui konfigurasi `MFA_ENABLED=true`; admin diwajibkan menggunakan MFA saat fitur ini aktif.
+- Header keamanan HTTP diterapkan pada seluruh respons.
+- Admin dapat mengaktifkan atau menonaktifkan tulisan berjalan serta mengubah teksnya melalui menu pengaturan.
 
 ## 5. Role dan Hak Akses
 
-| Role | Hak Akses |
+| Role | Hak akses |
 | --- | --- |
-| Admin | Semua modul, termasuk manajemen pengguna |
-| Staf | Modul admin utama selain manajemen pengguna |
-| Guru | Disiapkan sebagai role aplikasi, akses detail dapat dikembangkan berikutnya |
-| Guest | Halaman publik, form PSB, cek status, dan unggah dokumen sesuai nomor pendaftaran |
+| Admin | Seluruh modul, termasuk manajemen pengguna |
+| Staf | Modul operasional admin kecuali manajemen pengguna |
+| Guru | Role aplikasi tersedia; fitur khusus guru belum tersedia |
+| Guest | Website publik, PSB, cek status, dan akses dokumen yang terhubung dengan sesi kepemilikan |
 
 ## 6. Kebutuhan UI/UX
 
-- Tampilan publik harus terasa resmi, informatif, dan mudah digunakan.
-- Panel admin harus terasa profesional, padat, dan efisien untuk pekerjaan berulang.
-- Tabel data harus mudah dipindai, mendukung pencarian/filter, dan tetap nyaman di layar kecil.
-- Form harus jelas, konsisten, dan memiliki state validasi.
-- Warna status tidak boleh berdiri sendiri; setiap status tetap harus memiliki label teks.
-- Dashboard harus menonjolkan data penting tanpa terlihat seperti halaman pemasaran.
+- Tampilan publik resmi, informatif, dan mudah digunakan.
+- Panel admin padat, konsisten, dan mendukung pekerjaan berulang.
+- Data tabel mendukung pencarian/filter dan tetap dapat dibaca pada layar kecil.
+- Form memiliki validasi dan pesan kesalahan yang jelas.
+- Status ditampilkan bersama label teks, bukan hanya warna.
+- Navigasi, sidebar, header, dan tombol memiliki state responsif yang konsisten.
 
 ## 7. Kebutuhan Teknis
 
-- Backend menggunakan Laravel.
-- Frontend menggunakan Blade, Tailwind CSS, Alpine.js, dan Vite.
-- Database menggunakan migrasi Laravel.
-- File upload disimpan melalui Laravel Storage.
-- Asset production harus dibuild ke `public/build`.
-- Seeder menyediakan data demo agar aplikasi bisa langsung diuji.
+- Backend: PHP `^8.3` dan Laravel `^13.8`.
+- Frontend: Blade, Tailwind CSS `^4`, Alpine.js, dan Vite.
+- Database: MySQL atau database lain yang didukung Laravel melalui migrasi.
+- Upload disimpan melalui Laravel Storage.
+- Build produksi menghasilkan aset di `public/build`.
+- Seeder menyediakan data demo untuk pengujian lokal dan testing.
+- Pengujian browser Selenium mendukung mode `smoke`, `e2e`, dan `all`.
 
 ## 8. Data Utama
 
-- `users`: pengguna admin/staf/guru.
-- `school_profiles`: profil sekolah.
+- `users`: akun admin, staf, dan guru.
+- `school_profiles`: informasi profil sekolah.
 - `students`: data siswa.
 - `teachers`: data guru.
 - `registrations`: data pendaftar PSB.
-- `registration_documents`: dokumen pendaftaran.
+- `registration_documents`: dokumen pendaftar.
 - `announcements`: berita, agenda, dan pengumuman.
-- `galleries`: foto galeri.
+- `galleries`: dokumentasi galeri.
+- `security_audit_logs`: catatan kejadian keamanan.
+- `login_devices`: perangkat atau sidik jari login.
 
 ## 9. Acceptance Criteria
 
-- Pengunjung dapat membuka halaman publik tanpa login.
+- Pengunjung dapat membuka seluruh halaman publik tanpa login.
 - Calon siswa dapat mendaftar dan memperoleh nomor pendaftaran.
-- Calon siswa dapat mengecek status dengan nomor pendaftaran.
-- Calon siswa dapat mengunggah dokumen setelah mendaftar.
-- Admin/staf dapat login ke panel admin.
-- Admin/staf dapat memfilter dan mencari pendaftar.
-- Admin/staf dapat mengubah status pendaftar dan memberi catatan.
-- Admin/staf dapat mengelola siswa, guru, berita, galeri, dan profil sekolah.
+- Calon siswa dapat mengecek status menggunakan nomor dan email.
+- Calon siswa dapat mengunggah dokumen setelah memperoleh bukti kepemilikan sesi.
+- Pengguna aktif dapat login dan pengunjung/akun nonaktif tidak dapat masuk ke panel.
+- Admin dan staf dapat mencari serta memfilter pendaftar.
+- Admin dan staf dapat mengubah status serta memberi catatan pendaftar.
+- Pendaftar diterima dapat dikonversi menjadi data siswa.
+- Admin dan staf dapat mengelola siswa, guru, berita, galeri, dan profil sekolah.
 - Admin dapat mengelola pengguna.
-- Dashboard menampilkan statistik sesuai data database.
-- `npm run build` menghasilkan `public/build/manifest.json`.
-- Blade template dapat dikompilasi tanpa error.
+- Dashboard menampilkan data yang sesuai dengan database.
+- Pengguna dapat mengubah kata sandi dan mencabut sesi lain.
+- `npm run build` berhasil menghasilkan `public/build/manifest.json`.
+- `php artisan view:cache` dapat mengompilasi seluruh template Blade.
+- Suite Selenium smoke/E2E dapat dijalankan pada lingkungan testing.
 
 ## 10. Batasan Saat Ini
 
-- Notifikasi email/WhatsApp belum tersedia.
-- Payment atau biaya pendaftaran belum tersedia.
-- Role guru sudah tersedia di model, tetapi area kerja khusus guru belum dibuat.
-- Export data ke Excel/PDF belum tersedia.
-- Audit log perubahan data belum tersedia.
+- Notifikasi email/WhatsApp untuk perubahan status belum tersedia.
+- Pembayaran atau biaya pendaftaran belum tersedia.
+- MFA tersedia tetapi dinonaktifkan secara default hingga diaktifkan melalui konfigurasi.
+- Area kerja khusus guru belum tersedia.
+- Export Excel/PDF belum tersedia.
+- Preview dokumen pendaftar langsung di browser belum menjadi fitur utama.
+- Periode PSB, kuota, dan jalur pendaftaran belum tersedia sebagai pengaturan tersendiri.
 
-## 11. Prioritas Pengembangan Berikutnya
+## 11. Prioritas Berikutnya
 
-1. Export pendaftar, siswa, dan guru ke Excel/PDF.
+1. Audit dan ekspor data pendaftar, siswa, dan guru ke Excel/PDF.
 2. Notifikasi email atau WhatsApp untuk perubahan status pendaftaran.
-3. Audit log untuk perubahan data penting.
-4. Area khusus guru.
-5. Pengaturan periode PSB dan kuota jurusan.
-6. Preview dokumen pendaftar di panel admin.
+3. Dashboard dan fitur operasional khusus guru.
+4. Pengaturan periode PSB, kuota, dan jurusan.
+5. Preview dokumen pendaftar di panel admin.
+6. Aktivasi MFA terstruktur beserta pemulihan akun dan proses dukungan.

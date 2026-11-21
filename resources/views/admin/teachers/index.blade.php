@@ -6,6 +6,9 @@
     <div class="rounded-2xl border border-slate-200 bg-white shadow-card">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-4">
             <form method="GET" class="flex gap-2">
+                @if (request('account'))
+                    <input type="hidden" name="account" value="{{ request('account') }}">
+                @endif
                 <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama / NIP / mapel..."
                        class="w-64 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
                 <button class="rounded-lg bg-brand-950 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-900">Cari</button>
@@ -15,6 +18,20 @@
                class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-800">
                 + Tambah Guru
             </a>
+        </div>
+
+        <div class="flex flex-wrap gap-2 border-b border-slate-100 px-4 py-3">
+            @foreach ([
+                '' => ['label' => 'Semua', 'count' => $accountCounts['all']],
+                'linked' => ['label' => 'Akun tertaut', 'count' => $accountCounts['linked']],
+                'unlinked' => ['label' => 'Belum tertaut', 'count' => $accountCounts['unlinked']],
+            ] as $value => $filter)
+                <a href="{{ route('admin.teachers.index', array_filter(['account' => $value, 'q' => request('q')])) }}"
+                   class="admin-chip {{ request('account', '') === $value ? 'admin-chip-active' : '' }}">
+                    {{ $filter['label'] }}
+                    <span class="rounded-full bg-white/70 px-1.5 py-0.5 text-[10px]">{{ $filter['count'] }}</span>
+                </a>
+            @endforeach
         </div>
 
         <div class="overflow-x-auto">

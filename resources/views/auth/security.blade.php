@@ -1,13 +1,14 @@
 @extends('layouts.admin')
 
-@section('title', 'Keamanan Akun')
+@section('title', 'Pengaturan')
 
 @section('content')
-<div x-data="{ tab: ['mfa', 'password', 'sessions', 'activity'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'mfa', select(value) { this.tab = value; history.replaceState(null, '', `#${value}`) } }"
+<div x-data="{ tab: ['mfa', 'password', 'sessions', 'activity'@if($user->isAdmin()), 'settings'@endif].includes(location.hash.slice(1)) ? location.hash.slice(1) : '{{ $user->isAdmin() ? 'settings' : 'mfa' }}', select(value) { this.tab = value; history.replaceState(null, '', `#${value}`) } }"
      class="grid max-w-6xl items-start gap-4 lg:grid-cols-[13rem_minmax(0,1fr)]">
     <nav class="flex gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-white p-2 shadow-card lg:sticky lg:top-28 lg:flex-col lg:overflow-visible"
-         role="tablist" aria-label="Bagian keamanan akun">
+         role="tablist" aria-label="Bagian pengaturan">
         @foreach ([
+            ...($user->isAdmin() ? [['id' => 'settings', 'label' => 'Portal', 'icon' => 'cog']] : []),
             ['id' => 'mfa', 'label' => 'Autentikasi', 'icon' => 'shield-check'],
             ['id' => 'password', 'label' => 'Kata sandi', 'icon' => 'document'],
             ['id' => 'sessions', 'label' => 'Sesi aktif', 'icon' => 'users'],
@@ -98,6 +99,43 @@
         </div>
         <div class="mt-3 max-h-72 divide-y divide-slate-100 overflow-y-auto overscroll-contain pr-2">@forelse($audits as $audit)<div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-2.5 text-sm"><span class="font-medium text-slate-700">{{ str_replace('.', ' · ', $audit->event) }}</span><span class="text-xs text-slate-500">{{ \Carbon\Carbon::parse($audit->created_at)->format('d M Y H:i') }} · {{ $audit->ip_address }}</span></div>@empty<p class="py-4 text-sm text-slate-500">Belum ada aktivitas.</p>@endforelse</div>
     </section>
+
+    @if ($user->isAdmin())
+    <section x-show="tab === 'settings'" x-cloak x-transition.opacity role="tabpanel" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
+        <div>
+            <h2 class="text-base font-bold text-brand-950">Pengaturan portal</h2>
+            <p class="mt-1 text-sm text-slate-600">Atur tampilan informasi umum pada situs publik dan panel admin.</p>
+        </div>
+
+        <form method="POST" action="{{ route('admin.settings.update') }}" class="mt-5">
+            @csrf
+            @method('PUT')
+
+            <div class="admin-form-section">
+                <div class="admin-form-heading">
+                    <p>Tulisan Berjalan</p>
+                    <p>Atur teks informasi yang ditampilkan di bagian atas situs publik dan panel admin.</p>
+                </div>
+
+                <label class="flex items-start gap-3 rounded-lg border border-slate-200 px-4 py-3">
+                    <input type="checkbox" name="ticker_enabled" value="1" @checked($tickerEnabled)
+                           class="mt-0.5 size-4 rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+                    <span>
+                        <span class="block text-sm font-semibold text-slate-800">Aktifkan tulisan berjalan</span>
+                        <span class="mt-0.5 block text-xs text-slate-500">Jika dinonaktifkan, tulisan berjalan tidak ditampilkan.</span>
+                    </span>
+                </label>
+
+                <div class="mt-5">
+                    <x-form.textarea name="ticker_text" label="Isi Tulisan Berjalan" :value="$tickerText"
+                                     rows="3" maxlength="500" hint="Maksimal 500 karakter." />
+                </div>
+            </div>
+
+            <button class="admin-primary mt-6">Simpan Pengaturan</button>
+        </form>
+    </section>
+    @endif
     </div>
 </div>
 @endsection

@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AttendanceCheckInController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\SecurityController;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +62,11 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
+Route::prefix('pemberitahuan')->name('notifications.')->middleware(['auth', 'aktif'])->group(function () {
+    Route::post('/baca-semua', [NotificationController::class, 'readAll'])->name('read-all');
+    Route::get('/{notification}', [NotificationController::class, 'read'])->name('read');
+});
+
 Route::prefix('keamanan')->name('security.')->middleware(['auth', 'aktif'])->group(function () {
     Route::get('/', [SecurityController::class, 'index'])->name('index');
     Route::put('/password', [SecurityController::class, 'updatePassword'])->name('password');
@@ -67,6 +74,11 @@ Route::prefix('keamanan')->name('security.')->middleware(['auth', 'aktif'])->gro
     Route::post('/mfa/konfirmasi', [SecurityController::class, 'confirmMfa'])->name('mfa.confirm');
     Route::delete('/mfa', [SecurityController::class, 'disableMfa'])->name('mfa.disable');
     Route::delete('/sessions', [SecurityController::class, 'destroyOtherSessions'])->name('sessions.destroy');
+});
+
+Route::prefix('kehadiran')->name('attendance.')->middleware(['auth', 'aktif', 'mfa'])->group(function () {
+    Route::get('/', [AttendanceCheckInController::class, 'create'])->name('check-in');
+    Route::post('/', [AttendanceCheckInController::class, 'store'])->middleware('throttle:10,1')->name('store');
 });
 
 /*
@@ -92,6 +104,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa'])->gr
     // Guru
     Route::resource('teachers', Admin\TeacherController::class)->except('show');
 
+    // Tenaga kependidikan (khusus admin)
+    Route::resource('staff', Admin\StaffMemberController::class)->except('show')->middleware('admin');
+
+    // Absensi pegawai (khusus admin)
+    Route::get('attendances/export', [Admin\AttendanceController::class, 'export'])->name('attendances.export')->middleware('admin');
+    Route::get('attendances/{attendance}/face', [Admin\AttendanceController::class, 'facePhoto'])->name('attendances.face')->middleware('admin');
+    Route::put('attendances/{attendance}/face-review', [Admin\AttendanceController::class, 'reviewFace'])->name('attendances.face-review')->middleware('admin');
+    Route::resource('attendances', Admin\AttendanceController::class)->except('show')->middleware('admin');
+
     // Berita & pengumuman
     Route::resource('announcements', Admin\AnnouncementController::class)->except('show');
 
@@ -103,6 +124,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa'])->gr
     // Profil sekolah
     Route::get('/profil-sekolah', [Admin\SchoolProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profil-sekolah', [Admin\SchoolProfileController::class, 'update'])->name('profile.update');
+
+    // Pengaturan khusus admin
+    Route::get('/pengaturan', [Admin\SettingController::class, 'edit'])->name('settings.edit')->middleware('admin');
+    Route::put('/pengaturan', [Admin\SettingController::class, 'update'])->name('settings.update')->middleware('admin');
 
     // Manajemen pengguna (khusus admin)
     Route::resource('users', Admin\UserController::class)->except('show')->middleware('admin');

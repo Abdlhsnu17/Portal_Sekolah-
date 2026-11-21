@@ -35,10 +35,26 @@
         </div>
     </div>
 
+    @if (auth()->user()->isAdmin() && $statistik['guru_tanpa_akun'] > 0)
+        <a href="{{ route('admin.staff.index', ['type' => 'teacher', 'account' => 'unlinked']) }}"
+           class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 transition hover:border-amber-300 hover:bg-amber-100">
+            <span class="flex items-center gap-3">
+                <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-white/70 text-amber-700 ring-1 ring-amber-200">
+                    <x-icon name="users" class="size-4" />
+                </span>
+                <span>
+                    <span class="block text-sm font-bold">{{ number_format($statistik['guru_tanpa_akun']) }} guru belum memiliki akun</span>
+                    <span class="block text-xs text-amber-700">Tinjau data guru dan buat akun akses bila diperlukan.</span>
+                </span>
+            </span>
+            <span class="text-sm font-semibold">Tinjau guru &rarr;</span>
+        </a>
+    @endif
+
     <div class="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
         @foreach ([
             ['label' => 'Siswa aktif', 'nilai' => $statistik['siswa'], 'ikon' => 'users', 'rute' => route('admin.students.index'), 'tone' => 'bg-sky-50 text-sky-700 ring-sky-100'],
-            ['label' => 'Guru aktif', 'nilai' => $statistik['guru'], 'ikon' => 'academic', 'rute' => route('admin.teachers.index'), 'tone' => 'bg-emerald-50 text-emerald-700 ring-emerald-100'],
+            ['label' => 'Guru aktif', 'nilai' => $statistik['guru'], 'ikon' => 'academic', 'rute' => auth()->user()->isAdmin() ? route('admin.staff.index', ['type' => 'teacher']) : route('admin.teachers.index'), 'tone' => 'bg-emerald-50 text-emerald-700 ring-emerald-100'],
             ['label' => 'Menunggu', 'nilai' => $statistik['menunggu'], 'ikon' => 'clock', 'rute' => route('admin.registrations.index', ['status' => 'menunggu']), 'tone' => 'bg-amber-50 text-amber-700 ring-amber-100'],
             ['label' => 'Pendaftar', 'nilai' => $statistik['pendaftar'], 'ikon' => 'clipboard', 'rute' => route('admin.registrations.index'), 'tone' => 'bg-brand-50 text-brand-700 ring-brand-100'],
             ['label' => 'Konten', 'nilai' => $statistik['berita'], 'ikon' => 'newspaper', 'rute' => route('admin.announcements.index'), 'tone' => 'bg-violet-50 text-violet-700 ring-violet-100'],
@@ -68,6 +84,11 @@
             <div class="flex flex-wrap gap-2">
                 <a href="{{ route('admin.students.create') }}" class="admin-chip"><x-icon name="plus" class="size-4" /> Tambah siswa</a>
                 <a href="{{ route('admin.teachers.create') }}" class="admin-chip"><x-icon name="plus" class="size-4" /> Tambah guru</a>
+                @if (auth()->user()->isAdmin() && $statistik['guru_tanpa_akun'] > 0)
+                    <a href="{{ route('admin.staff.index', ['type' => 'teacher', 'account' => 'unlinked']) }}" class="admin-chip">
+                        <x-icon name="users" class="size-4" /> Akun guru ({{ $statistik['guru_tanpa_akun'] }})
+                    </a>
+                @endif
                 <a href="{{ route('admin.announcements.create') }}" class="admin-primary"><x-icon name="pencil" class="size-4" /> Tulis berita</a>
             </div>
         </div>

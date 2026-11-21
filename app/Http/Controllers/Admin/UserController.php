@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\StaffMember;
 use App\Models\Teacher;
+use App\Models\User;
 use App\Notifications\SecurityEventNotification;
 use App\Support\SecurityAudit;
 use Illuminate\Http\Request;
@@ -22,21 +23,40 @@ class UserController extends Controller
         $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
 
         return view('admin.users.index', [
-            'items' => User::with('teacher')->search($request->input('q'))->orderBy($sort, $direction)->paginate(10)->withQueryString(),
+            'items' => User::with(['teacher', 'staffMember'])->search($request->input('q'))->orderBy($sort, $direction)->paginate(10)->withQueryString(),
         ]);
     }
 
     public function create(Request $request)
     {
         $selectedTeacherId = $request->integer('teacher_id') ?: null;
-        if ($selectedTeacherId && ! Teacher::whereKey($selectedTeacherId)->whereNull('user_id')->exists()) {
+        $selectedStaffId = $selectedTeacherId ? null : ($request->integer('staff_member_id') ?: null);
+        $selectedTeacher = $selectedTeacherId
+            ? Teacher::whereKey($selectedTeacherId)->whereNull('user_id')->first()
+            : null;
+        $selectedStaff = $selectedStaffId
+            ? StaffMember::whereKey($selectedStaffId)->whereNull('user_id')->first()
+            : null;
+
+        if ($selectedTeacherId && ! $selectedTeacher) {
             $selectedTeacherId = null;
+        }
+        if ($selectedStaffId && ! $selectedStaff) {
+            $selectedStaffId = null;
         }
 
         return view('admin.users.form', [
-            'item' => new User(['role' => $selectedTeacherId ? 'guru' : 'staf', 'is_active' => true]),
+            'item' => new User([
+                'name' => $selectedTeacher?->nama ?? $selectedStaff?->nama,
+                'email' => $selectedTeacher?->email ?? $selectedStaff?->email,
+                'telepon' => $selectedTeacher?->telepon ?? $selectedStaff?->telepon,
+                'role' => $selectedTeacherId ? 'guru' : 'staf',
+                'is_active' => true,
+            ]),
             'teachers' => $this->teacherOptions(),
             'selectedTeacherId' => $selectedTeacherId,
+            'staffMembers' => $this->staffOptions(),
+            'selectedStaffId' => $selectedStaffId,
         ]);
     }
 
@@ -47,18 +67,23 @@ class UserController extends Controller
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')],
             'role' => ['required', Rule::in(User::ROLES)],
             'telepon' => ['nullable', 'string', 'max:30'],
-            'teacher_id' => ['nullable', 'integer', 'exists:teachers,id', Rule::unique('teachers', 'id')->whereNotNull('user_id')],
+            'teacher_id' => ['nullable', 'integer', Rule::prohibitedIf($request->filled('staff_member_id')), 'exists:teachers,id', Rule::unique('teachers', 'id')->whereNotNull('user_id')],
+            'staff_member_id' => ['nullable', 'integer', Rule::prohibitedIf($request->filled('teacher_id')), 'exists:staff_members,id', Rule::unique('staff_members', 'id')->whereNotNull('user_id')],
             'password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()->uncompromised()],
         ]);
 
         $teacherId = $data['teacher_id'] ?? null;
-        unset($data['teacher_id']);
+        $staffId = $data['staff_member_id'] ?? null;
+        unset($data['teacher_id'], $data['staff_member_id']);
         $data['is_active'] = $request->boolean('is_active');
 
-        $user = DB::transaction(function () use ($data, $teacherId) {
+        $user = DB::transaction(function () use ($data, $teacherId, $staffId) {
             $user = User::create($data);
             if ($teacherId) {
                 Teacher::findOrFail($teacherId)->update(['user_id' => $user->id]);
+            }
+            if ($staffId) {
+                StaffMember::findOrFail($staffId)->update(['user_id' => $user->id]);
             }
 
             return $user;
@@ -71,9 +96,11 @@ class UserController extends Controller
     public function edit(User $user)
     {
         return view('admin.users.form', [
-            'item' => $user->load('teacher'),
+            'item' => $user->load(['teacher', 'staffMember']),
             'teachers' => $this->teacherOptions($user),
             'selectedTeacherId' => null,
+            'staffMembers' => $this->staffOptions($user),
+            'selectedStaffId' => null,
         ]);
     }
 
@@ -85,14 +112,19 @@ class UserController extends Controller
             'role' => ['required', Rule::in(User::ROLES)],
             'telepon' => ['nullable', 'string', 'max:30'],
             'teacher_id' => [
-                'nullable', 'integer', 'exists:teachers,id',
+                'nullable', 'integer', Rule::prohibitedIf($request->filled('staff_member_id')), 'exists:teachers,id',
                 Rule::unique('teachers', 'id')->whereNotNull('user_id')->ignore($user->teacher?->id),
+            ],
+            'staff_member_id' => [
+                'nullable', 'integer', Rule::prohibitedIf($request->filled('teacher_id')), 'exists:staff_members,id',
+                Rule::unique('staff_members', 'id')->whereNotNull('user_id')->ignore($user->staffMember?->id),
             ],
             'password' => ['nullable', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()->uncompromised()],
         ]);
 
         $teacherId = $data['teacher_id'] ?? null;
-        unset($data['teacher_id']);
+        $staffId = $data['staff_member_id'] ?? null;
+        unset($data['teacher_id'], $data['staff_member_id']);
         $data['is_active'] = $request->boolean('is_active');
 
         if (blank($data['password'])) {
@@ -111,11 +143,15 @@ class UserController extends Controller
             $data['password_changed_at'] = now();
             $data['remember_token'] = Str::random(60);
         }
-        DB::transaction(function () use ($user, $data, $teacherId) {
+        DB::transaction(function () use ($user, $data, $teacherId, $staffId) {
             $user->update($data);
             Teacher::where('user_id', $user->id)->update(['user_id' => null]);
+            StaffMember::where('user_id', $user->id)->update(['user_id' => null]);
             if ($teacherId) {
                 Teacher::findOrFail($teacherId)->update(['user_id' => $user->id]);
+            }
+            if ($staffId) {
+                StaffMember::findOrFail($staffId)->update(['user_id' => $user->id]);
             }
         });
         if ($credentialsChanged && config('session.driver') === 'database') {
@@ -155,6 +191,23 @@ class UserController extends Controller
             ->get()
             ->mapWithKeys(fn (Teacher $teacher) => [
                 $teacher->id => "{$teacher->nama} ({$teacher->nip})",
+            ])
+            ->all();
+    }
+
+    private function staffOptions(?User $user = null): array
+    {
+        return StaffMember::query()
+            ->where(function ($query) use ($user) {
+                $query->whereNull('user_id');
+                if ($user) {
+                    $query->orWhere('user_id', $user->id);
+                }
+            })
+            ->orderBy('nama')
+            ->get()
+            ->mapWithKeys(fn (StaffMember $staff) => [
+                $staff->id => "{$staff->nama} ({$staff->nip})",
             ])
             ->all();
     }

@@ -3,6 +3,16 @@
 namespace App\Providers;
 
 use App\Models\Announcement;
+use App\Models\Attendance;
+use App\Models\Gallery;
+use App\Models\Registration;
+use App\Models\SchoolProfile;
+use App\Models\SiteSetting;
+use App\Models\StaffMember;
+use App\Models\Student;
+use App\Models\Teacher;
+use App\Models\User;
+use App\Observers\ActivityObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -27,8 +37,28 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->batasiLajuPermintaan();
 
+        foreach ([Registration::class, Student::class, Teacher::class, StaffMember::class,
+            Attendance::class, Announcement::class, Gallery::class, SchoolProfile::class, User::class] as $model) {
+            $model::observe(ActivityObserver::class);
+        }
+
         View::composer(['layouts.public', 'layouts.admin'], function ($view) {
-            $view->with('tickerAnnouncements', Announcement::published()->take(4)->get());
+            $view->with([
+                'tickerAnnouncements' => Announcement::published()->take(4)->get(),
+                'tickerEnabled' => SiteSetting::getValue('ticker_enabled', '1') === '1',
+                'tickerText' => SiteSetting::getValue(
+                    'ticker_text',
+                    'Portal sekolah — informasi akademik dan layanan sekolah dalam satu tempat.',
+                ),
+            ]);
+        });
+
+        View::composer('layouts.admin', function ($view) {
+            $user = auth()->user();
+            $view->with([
+                'headerNotifications' => $user?->notifications()->latest()->limit(8)->get() ?? collect(),
+                'unreadNotificationCount' => $user?->unreadNotifications()->count() ?? 0,
+            ]);
         });
     }
 

@@ -3,10 +3,6 @@
 @section('title', $item->exists ? 'Ubah Pengguna' : 'Tambah Pengguna')
 
 @section('content')
-    <a href="{{ route('admin.users.index') }}" class="text-sm font-medium text-slate-500 hover:text-brand-700">
-        &larr; Kembali ke daftar pengguna
-    </a>
-
     <form method="POST"
           action="{{ $item->exists ? route('admin.users.update', $item) : route('admin.users.store') }}"
           class="mt-4 max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
@@ -22,8 +18,11 @@
             <x-form.select name="teacher_id" label="Data Guru Terkait"
                            :value="$item->teacher?->id ?? $selectedTeacherId" :options="$teachers"
                            placeholder="Tidak ditautkan" />
+            <x-form.select name="staff_member_id" label="Data Staf Terkait"
+                           :value="$item->staffMember?->id ?? $selectedStaffId" :options="$staffMembers"
+                           placeholder="Tidak ditautkan" />
             <p class="-mt-3 text-xs leading-relaxed text-slate-500 sm:col-span-2">
-                Tautan ini menghubungkan akun login dengan identitas guru. Peran di atas tetap hanya mengatur hak akses.
+                Pilih paling banyak satu identitas guru atau staf. Peran di atas tetap hanya mengatur hak akses.
             </p>
 
             <div class="flex items-end pb-2">

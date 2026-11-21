@@ -17,6 +17,7 @@ class DashboardController extends Controller
             'statistik' => [
                 'siswa' => Student::where('status', 'aktif')->count(),
                 'guru' => Teacher::where('status', 'aktif')->count(),
+                'guru_tanpa_akun' => Teacher::whereNull('user_id')->count(),
                 'pendaftar' => Registration::count(),
                 'menunggu' => Registration::where('status', 'menunggu')->count(),
                 'berita' => Announcement::count(),

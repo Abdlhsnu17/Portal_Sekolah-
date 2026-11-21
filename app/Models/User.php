@@ -51,6 +51,11 @@ class User extends Authenticatable
         return $this->hasOne(Teacher::class);
     }
 
+    public function staffMember(): HasOne
+    {
+        return $this->hasOne(StaffMember::class);
+    }
+
     public function hasTwoFactorAuthentication(): bool
     {
         return $this->two_factor_confirmed_at !== null && filled($this->two_factor_secret);

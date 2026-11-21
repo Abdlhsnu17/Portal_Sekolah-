@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SiteSetting;
 use App\Notifications\SecurityEventNotification;
 use App\Support\SecurityAudit;
 use App\Support\Totp;
@@ -17,7 +18,7 @@ class SecurityController extends Controller
     {
         $secret = $request->session()->get('mfa_setup_secret');
 
-        return view('auth.security', [
+        $viewData = [
             'user' => $request->user(),
             'sessions' => DB::table('sessions')->where('user_id', $request->user()->id)
                 ->latest('last_activity')->get(),
@@ -25,7 +26,19 @@ class SecurityController extends Controller
                 ->latest('created_at')->limit(15)->get(),
             'mfaSecret' => $secret,
             'mfaUri' => $secret ? $totp->uri($secret, $request->user()->email) : null,
-        ]);
+        ];
+
+        if ($request->user()->isAdmin()) {
+            $viewData += [
+                'tickerEnabled' => SiteSetting::getValue('ticker_enabled', '1') === '1',
+                'tickerText' => SiteSetting::getValue(
+                    'ticker_text',
+                    'Portal sekolah — informasi akademik dan layanan sekolah dalam satu tempat.',
+                ),
+            ];
+        }
+
+        return view('auth.security', $viewData);
     }
 
     public function updatePassword(Request $request)

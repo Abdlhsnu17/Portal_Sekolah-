@@ -1,24 +1,41 @@
 # Portal Sekolah
 
-Portal Sekolah adalah aplikasi web berbasis Laravel untuk mengelola profil sekolah, berita, galeri, data siswa, data guru, dan penerimaan siswa baru (PSB). Aplikasi ini menyediakan halaman publik untuk pengunjung serta panel admin untuk staf sekolah.
+Portal Sekolah adalah aplikasi web Laravel untuk publikasi informasi sekolah, penerimaan siswa baru (PSB), dan administrasi operasional. Aplikasi menyediakan halaman publik serta panel admin untuk admin dan staf.
 
-## Fitur Utama
+## Fitur Terbaru
 
-- Halaman publik: beranda, profil sekolah, berita, detail berita, dan galeri.
-- Penerimaan siswa baru: formulir pendaftaran, cek status, unggah dokumen, dan penghapusan dokumen.
-- Panel admin: dashboard operasional, manajemen pendaftaran, siswa, guru, berita, galeri, profil sekolah, dan pengguna.
-- Role pengguna: `admin`, `staf`, dan `guru`.
-- Dashboard profesional dengan ringkasan statistik, status verifikasi PSB, pendaftar terbaru, dan konten terbaru.
-- Seed data demo untuk profil sekolah, akun, siswa, guru, konten, galeri, dan pendaftar.
+- Website publik untuk profil sekolah, berita, agenda, dan galeri.
+- Pendaftaran siswa baru beserta nomor pendaftaran otomatis `PSB-{tahun}-{nomor urut}`.
+- Pengecekan status PSB menggunakan nomor pendaftaran dan email.
+- Unggah, unduh, dan hapus dokumen pendaftar dengan kontrol kepemilikan sesi.
+- Dashboard admin responsif dengan statistik dan aktivitas sekolah terbaru.
+- Sidebar admin yang dapat diciutkan pada layar desktop; bagian atas sidebar menampilkan logo saja.
+- Manajemen pendaftaran, siswa, guru, berita, galeri, profil sekolah, dan pengguna.
+- Konversi pendaftar dengan status diterima menjadi data siswa.
+- Login dengan CAPTCHA setelah percobaan gagal berulang dan batasan pengguna nonaktif.
+- Pengaturan kata sandi, pencabutan sesi lain, audit login, serta dukungan TOTP/MFA.
+- Header keamanan HTTP pada seluruh respons.
+- Pengaturan tulisan berjalan khusus admin melalui `/admin/pengaturan`.
 
 ## Teknologi
 
 - PHP `^8.3`
 - Laravel `^13.8`
 - MySQL atau database lain yang didukung Laravel
-- Vite `^8`
+- Blade
 - Tailwind CSS `^4`
 - Alpine.js
+- Vite `^6`
+- Selenium untuk pengujian browser
+
+## Persyaratan
+
+- PHP 8.3 atau lebih baru beserta ekstensi yang dibutuhkan Laravel.
+- Composer.
+- Node.js `20.19+` atau `22.12+`.
+- npm.
+- Database yang didukung Laravel.
+- Google Chrome/Chromium untuk pengujian Selenium.
 
 ## Instalasi Lokal
 
@@ -28,102 +45,142 @@ Portal Sekolah adalah aplikasi web berbasis Laravel untuk mengelola profil sekol
 composer install
 ```
 
-2. Install dependency frontend:
-
-```bash
-npm install
-```
-
-3. Buat file environment dan app key:
+2. Buat file environment:
 
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-4. Atur koneksi database di `.env`, lalu jalankan migrasi dan seeder:
+3. Install dependency frontend:
+
+```bash
+npm install
+```
+
+4. Atur koneksi database pada `.env`, lalu jalankan migrasi dan seeder:
 
 ```bash
 php artisan migrate --seed
 ```
 
-5. Buat symlink storage untuk file upload:
+5. Buat symlink storage:
 
 ```bash
 php artisan storage:link
 ```
 
-6. Build asset frontend:
+6. Build aset dan jalankan aplikasi:
 
 ```bash
 npm run build
-```
-
-7. Jalankan server:
-
-```bash
 php artisan serve
 ```
 
-Akses aplikasi di `http://127.0.0.1:8000`.
+Aplikasi dapat diakses di `http://127.0.0.1:8000`.
 
 ## Mode Development
 
-Untuk menjalankan server Laravel dan Vite secara terpisah:
+Jalankan Laravel dan Vite secara terpisah:
 
 ```bash
 php artisan serve
 npm run dev
 ```
 
-Atau gunakan script gabungan dari Composer:
+Atau jalankan seluruh proses development melalui Composer:
 
 ```bash
 composer run dev
 ```
 
-## Akun Demo
+## Akun dan Data Demo
 
-Seeder hanya membuat akun contoh pada lingkungan `local`/`testing` apabila
-`SEED_ADMIN_PASSWORD` dan `SEED_STAFF_PASSWORD` diisi. Gunakan password kuat dan
-jangan pernah mengaktifkan akun demo di production.
-
-Untuk production, gunakan HTTPS dan konfigurasi minimum berikut:
+Seeder membuat akun dan data demo untuk lingkungan lokal/testing. Pengaturan password demo disediakan melalui variabel environment:
 
 ```env
-APP_ENV=production
-APP_DEBUG=false
-SESSION_ENCRYPT=true
-SESSION_SECURE_COOKIE=true
-SESSION_HTTP_ONLY=true
-SESSION_SAME_SITE=lax
+SEED_ADMIN_PASSWORD=
+SEED_STAFF_PASSWORD=
 ```
 
-Panel admin tersedia di:
+Gunakan password kuat dan jangan mengaktifkan akun demo pada production.
+
+Panel admin:
 
 ```text
 /admin
 ```
 
+## Konfigurasi Keamanan
+
+Contoh minimum untuk production:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+SESSION_DRIVER=database
+SESSION_ENCRYPT=true
+SESSION_SECURE_COOKIE=true
+SESSION_HTTP_ONLY=true
+SESSION_SAME_SITE=lax
+MFA_ENABLED=false
+```
+
+Fitur autentikasi dua faktor sudah tersedia. Aktifkan MFA pada akun yang siap menggunakan autentikator TOTP:
+
+```env
+MFA_ENABLED=true
+```
+
+Dengan MFA aktif, administrator wajib mengaktifkan MFA sebelum dapat membuka panel admin.
+
 ## Struktur Modul
 
-| Modul | Route Utama | Deskripsi |
+| Modul | Route utama | Deskripsi |
 | --- | --- | --- |
-| Publik | `/`, `/profil`, `/berita`, `/galeri` | Informasi sekolah untuk pengunjung |
-| Pendaftaran | `/pendaftaran` | Form PSB dan unggah dokumen |
-| Cek Status | `/pendaftaran/cek-status` | Pengecekan status pendaftaran |
-| Dashboard Admin | `/admin` | Statistik dan aktivitas terbaru |
-| Pendaftaran Admin | `/admin/pendaftaran` | Verifikasi, catatan, penerimaan, dan penghapusan pendaftar |
+| Publik | `/`, `/profil`, `/berita`, `/galeri` | Informasi resmi untuk pengunjung |
+| Pendaftaran | `/pendaftaran` | Formulir PSB dan unggah dokumen |
+| Cek status | `/pendaftaran/cek-status` | Pengecekan status pendaftaran |
+| Autentikasi | `/login` | Login, MFA, dan logout |
+| Keamanan akun | `/keamanan` | Kata sandi, MFA, sesi, dan audit keamanan |
+| Dashboard admin | `/admin` | Ringkasan statistik dan aktivitas |
+| Pendaftaran admin | `/admin/pendaftaran` | Verifikasi dan konversi pendaftar |
 | Siswa | `/admin/students` | CRUD data siswa |
 | Guru | `/admin/teachers` | CRUD data guru |
 | Berita | `/admin/announcements` | CRUD berita, agenda, dan pengumuman |
-| Galeri | `/admin/galeri` | Upload dan kelola foto galeri |
-| Profil Sekolah | `/admin/profil-sekolah` | Edit informasi sekolah |
+| Galeri | `/admin/galeri` | Unggah dan kelola foto galeri |
+| Profil sekolah | `/admin/profil-sekolah` | Edit informasi sekolah |
 | Pengguna | `/admin/users` | Manajemen pengguna khusus admin |
+| Pengaturan | `/admin/pengaturan` | Pengaturan tulisan berjalan, khusus admin |
 
-## Catatan Asset Vite
+## Testing
 
-Jika muncul error:
+Install dependency runner Selenium:
+
+```bash
+python3 -m pip install -r requirements-e2e.txt
+```
+
+Jalankan suite:
+
+```bash
+npm run test:smoke
+npm run test:e2e
+npm run test:selenium
+```
+
+Runner menggunakan database SQLite sementara, server Laravel sendiri, dan Chrome/Chromium. Database testing dihapus setelah suite selesai.
+
+Perintah validasi dasar:
+
+```bash
+php artisan view:cache
+npm run build
+```
+
+## Troubleshooting Vite
+
+Jika muncul pesan:
 
 ```text
 Vite manifest not found at: public/build/manifest.json
@@ -135,29 +192,8 @@ jalankan:
 npm run build
 ```
 
-Vite versi saat ini meminta Node.js `20.19+` atau `22.12+`. Jika build memberi warning versi Node, upgrade Node ke versi yang sesuai.
-
-## Testing
-
-Suite lama telah diganti dengan pengujian browser Selenium. Siapkan dependensi:
-
-```bash
-python3 -m pip install -r requirements-e2e.txt
-```
-
-Google Chrome/Chromium harus tersedia. Driver browser dikelola otomatis oleh
-Selenium Manager. Jalankan suite sesuai kebutuhan:
-
-```bash
-npm run test:smoke
-npm run test:e2e
-npm run test:selenium
-```
-
-Runner memakai database SQLite sementara, menjalankan server Laravel sendiri,
-dan menghapus database setelah selesai. Pengujian tidak mengambil screenshot
-atau video, sehingga tidak ada gambar hasil test lama yang tersimpan.
+Pastikan Node.js memenuhi persyaratan versi yang tercantum di atas.
 
 ## Dokumen Produk
 
-Dokumen Product Requirements Document tersedia di [docs/PRD.md](docs/PRD.md).
+Product Requirements Document terbaru tersedia di [docs/PRD.md](docs/PRD.md).

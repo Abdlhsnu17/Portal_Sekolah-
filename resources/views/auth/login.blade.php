@@ -71,16 +71,9 @@
                     <x-logo class="size-11" />
                     <span class="max-w-48 text-sm font-bold leading-tight text-brand-950">{{ $profil->nama }}</span>
                 </a>
-                <a href="{{ route('home') }}" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-brand-700 transition hover:bg-brand-50">
-                    <x-icon name="arrow-left" class="size-3.5" />Beranda
-                </a>
             </div>
 
             <div class="mb-8">
-                <a href="{{ route('home') }}"
-                   class="mb-7 hidden w-fit items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-brand-700 shadow-sm transition hover:border-brand-200 hover:bg-brand-50 lg:inline-flex">
-                    <x-icon name="arrow-left" class="size-4" />Kembali ke Beranda
-                </a>
                 <p class="eyebrow text-brand-500">Portal Petugas</p>
                 <h1 class="mt-3 text-3xl font-bold tracking-tight text-brand-950">Selamat datang kembali</h1>
                 <p class="mt-2 text-sm leading-relaxed text-slate-500">Masukkan akun resmi Anda untuk melanjutkan ke panel administrasi.</p>
@@ -124,9 +117,16 @@
                         :disabled="memuat"
                         class="group flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3.5 text-sm font-semibold text-white shadow-lift transition hover:bg-brand-600 disabled:cursor-wait disabled:opacity-70">
                     <span x-text="memuat ? 'Memproses...' : 'Masuk ke Panel'"></span>
-                    <x-icon name="arrow-right" class="size-4 transition group-hover:translate-x-0.5" />
+                    <x-icon name="login" class="size-4" />
                 </button>
             </form>
+
+            <div class="mt-6 text-center">
+                <a href="{{ route('home') }}"
+                   class="inline-flex rounded-lg px-3 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 hover:text-brand-900">
+                    Kembali ke Beranda
+                </a>
+            </div>
 
             <div class="mt-8 flex items-start gap-3 rounded-xl border border-brand-100 bg-brand-50/70 p-4 text-xs leading-relaxed text-slate-500">
                 <x-icon name="shield-check" class="mt-0.5 size-5 shrink-0 text-brand-500" />
