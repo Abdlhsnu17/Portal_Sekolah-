@@ -19,6 +19,12 @@
             <x-form.input name="telepon" label="Telepon" :value="$item->telepon" />
             <x-form.select name="role" label="Peran" required :value="$item->role"
                            :options="['admin' => 'Administrator', 'staf' => 'Staf', 'guru' => 'Guru']" />
+            <x-form.select name="teacher_id" label="Data Guru Terkait"
+                           :value="$item->teacher?->id ?? $selectedTeacherId" :options="$teachers"
+                           placeholder="Tidak ditautkan" />
+            <p class="-mt-3 text-xs leading-relaxed text-slate-500 sm:col-span-2">
+                Tautan ini menghubungkan akun login dengan identitas guru. Peran di atas tetap hanya mengatur hak akses.
+            </p>
 
             <div class="flex items-end pb-2">
                 <label class="flex items-center gap-2 text-sm text-slate-700">

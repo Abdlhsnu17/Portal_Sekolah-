@@ -3,14 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
 
 class Teacher extends Model
 {
     protected $fillable = [
-        'nip', 'nama', 'email', 'telepon', 'jenis_kelamin',
+        'user_id', 'nip', 'nama', 'email', 'telepon', 'jenis_kelamin',
         'mata_pelajaran', 'jabatan', 'tanggal_bergabung', 'alamat', 'status',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     protected $casts = [
         'tanggal_bergabung' => 'date',

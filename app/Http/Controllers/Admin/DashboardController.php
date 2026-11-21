@@ -24,8 +24,10 @@ class DashboardController extends Controller
             ],
             'statusPendaftaran' => collect(Registration::STATUSES)
                 ->mapWithKeys(fn ($s) => [$s => Registration::where('status', $s)->count()]),
-            'pendaftarTerbaru' => Registration::latest()->take(6)->get(),
-            'beritaTerbaru' => Announcement::latest()->take(5)->get(),
+            // Dashboard cukup menampilkan cuplikan; daftar lengkap tersedia lewat
+            // halaman modul agar tinggi layar tetap ringkas.
+            'pendaftarTerbaru' => Registration::latest()->take(4)->get(),
+            'beritaTerbaru' => Announcement::latest()->take(4)->get(),
         ]);
     }
 }

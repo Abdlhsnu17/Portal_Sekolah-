@@ -12,10 +12,14 @@ class AnnouncementController extends Controller
 {
     public function index(Request $request)
     {
+        $sort = in_array($request->input('sort'), ['judul', 'kategori', 'is_published', 'published_at'], true)
+            ? $request->input('sort') : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+
         return view('admin.announcements.index', [
             'items' => Announcement::when($request->input('q'), fn ($query, $term) => $query->where('judul', 'like', "%{$term}%"))
                 ->when($request->input('kategori'), fn ($query, $kategori) => $query->where('kategori', $kategori))
-                ->latest()
+                ->orderBy($sort, $direction)
                 ->paginate(10)
                 ->withQueryString(),
             'filterKategori' => $request->input('kategori'),

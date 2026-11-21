@@ -24,16 +24,16 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[640px] text-left text-sm">
+            <table data-smart-table data-table-name="siswa" class="w-full min-w-[640px] text-left text-sm">
                 <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <tr>
-                        <th class="px-4 py-3">NIS</th>
-                        <th class="px-4 py-3">Nama</th>
-                        <th class="px-4 py-3">Kelas</th>
+                        <x-sort-header column="nis" label="NIS" />
+                        <x-sort-header column="nama" label="Nama" />
+                        <x-sort-header column="kelas" label="Kelas" />
                         {{-- Kolom sekunder disembunyikan di layar sempit agar tabel tetap muat --}}
-                        <th class="hidden px-4 py-3 xl:table-cell">Jurusan</th>
-                        <th class="hidden px-4 py-3 lg:table-cell">L/P</th>
-                        <th class="px-4 py-3">Status</th>
+                        <x-sort-header column="jurusan" label="Jurusan" class="hidden xl:table-cell" />
+                        <x-sort-header column="jenis_kelamin" label="L/P" class="hidden lg:table-cell" />
+                        <x-sort-header column="status" label="Status" />
                         {{-- Kolom aksi menempel di kanan agar tak pernah tertutup saat tabel digeser --}}
                         <th class="sticky right-0 bg-slate-50 px-4 py-3 text-right">Aksi</th>
                     </tr>
@@ -67,13 +67,16 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-14 text-center text-slate-500">Belum ada data siswa.</td>
+                            <td colspan="7"><x-empty-state icon="users" title="Belum ada data siswa" description="Tambahkan siswa pertama untuk mulai mengelola data akademik." :href="route('admin.students.create')" action="Tambah siswa" /></td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="border-t border-slate-100 p-4">{{ $items->links() }}</div>
+        <div class="smart-table-footer border-t border-slate-100 p-4">
+            <p class="text-xs font-medium text-slate-500">Menampilkan {{ $items->firstItem() ?? 0 }}–{{ $items->lastItem() ?? 0 }} dari {{ $items->total() }} siswa</p>
+            {{ $items->links() }}
+        </div>
     </div>
 @endsection

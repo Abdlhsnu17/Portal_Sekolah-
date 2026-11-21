@@ -15,11 +15,15 @@ class RegistrationController extends Controller
 {
     public function index(Request $request)
     {
+        $sort = in_array($request->input('sort'), ['nomor_pendaftaran', 'nama_lengkap', 'asal_sekolah', 'jurusan_pilihan', 'status'], true)
+            ? $request->input('sort') : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+
         return view('admin.registrations.index', [
             'items' => Registration::search($request->input('q'))
                 ->when($request->input('status'), fn ($query, $status) => $query->where('status', $status))
                 ->withCount('documents')
-                ->latest()
+                ->orderBy($sort, $direction)
                 ->paginate(10)
                 ->withQueryString(),
             'filterStatus' => $request->input('status'),

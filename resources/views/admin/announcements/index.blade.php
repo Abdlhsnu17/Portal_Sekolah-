@@ -33,13 +33,13 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[600px] text-left text-sm">
+            <table data-smart-table data-table-name="konten" class="w-full min-w-[600px] text-left text-sm">
                 <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <tr>
-                        <th class="px-4 py-3">Judul</th>
-                        <th class="px-4 py-3">Kategori</th>
-                        <th class="hidden px-4 py-3 xl:table-cell">Publikasi</th>
-                        <th class="hidden px-4 py-3 lg:table-cell">Tanggal</th>
+                        <x-sort-header column="judul" label="Judul" />
+                        <x-sort-header column="kategori" label="Kategori" />
+                        <x-sort-header column="is_published" label="Publikasi" class="hidden xl:table-cell" />
+                        <x-sort-header column="published_at" label="Tanggal" class="hidden lg:table-cell" />
                         <th class="sticky right-0 bg-slate-50 px-4 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -81,13 +81,16 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-14 text-center text-slate-500">Belum ada konten.</td>
+                            <td colspan="5"><x-empty-state icon="newspaper" title="Belum ada konten" description="Tulis berita atau pengumuman pertama untuk situs sekolah." :href="route('admin.announcements.create')" action="Tulis konten" /></td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="border-t border-slate-100 p-4">{{ $items->links() }}</div>
+        <div class="smart-table-footer border-t border-slate-100 p-4">
+            <p class="text-xs font-medium text-slate-500">Menampilkan {{ $items->firstItem() ?? 0 }}–{{ $items->lastItem() ?? 0 }} dari {{ $items->total() }} konten</p>
+            {{ $items->links() }}
+        </div>
     </div>
 @endsection

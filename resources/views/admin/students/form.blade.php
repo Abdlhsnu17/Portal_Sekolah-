@@ -13,22 +13,32 @@
         @csrf
         @if ($item->exists) @method('PUT') @endif
 
-        <div class="grid gap-5 sm:grid-cols-2">
-            <x-form.input name="nis" label="NIS" required :value="$item->nis" />
-            <x-form.input name="nisn" label="NISN" :value="$item->nisn" />
-            <x-form.input name="nama" label="Nama Lengkap" required :value="$item->nama" class="sm:col-span-2" />
-            <x-form.input name="email" label="Email" type="email" :value="$item->email" />
-            <x-form.select name="jenis_kelamin" label="Jenis Kelamin" required :value="$item->jenis_kelamin"
-                           :options="['L' => 'Laki-laki', 'P' => 'Perempuan']" />
-            <x-form.input name="kelas" label="Kelas" :value="$item->kelas" placeholder="Contoh: X-1" />
-            <x-form.input name="jurusan" label="Jurusan" :value="$item->jurusan" />
-            <x-form.input name="tanggal_lahir" label="Tanggal Lahir" type="date"
-                          :value="optional($item->tanggal_lahir)->format('Y-m-d')" />
-            <x-form.select name="status" label="Status" required :value="$item->status"
-                           :options="['aktif' => 'Aktif', 'lulus' => 'Lulus', 'pindah' => 'Pindah', 'nonaktif' => 'Nonaktif']" />
-            <x-form.input name="nama_wali" label="Nama Orang Tua / Wali" :value="$item->nama_wali" />
-            <x-form.input name="telepon_wali" label="Telepon Wali" :value="$item->telepon_wali" />
-            <x-form.textarea name="alamat" label="Alamat" :value="$item->alamat" class="sm:col-span-2" />
+        <div class="admin-form-section">
+            <div class="admin-form-heading"><p>Identitas siswa</p><p>Data pokok untuk mengenali siswa pada sistem sekolah.</p></div>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <x-form.input name="nis" label="NIS" required :value="$item->nis" />
+                <x-form.input name="nisn" label="NISN" :value="$item->nisn" />
+                <x-form.input name="nama" label="Nama Lengkap" required :value="$item->nama" class="sm:col-span-2" />
+                <x-form.input name="email" label="Email" type="email" :value="$item->email" />
+                <x-form.select name="jenis_kelamin" label="Jenis Kelamin" required :value="$item->jenis_kelamin" :options="['L' => 'Laki-laki', 'P' => 'Perempuan']" />
+                <x-form.input name="tanggal_lahir" label="Tanggal Lahir" type="date" :value="optional($item->tanggal_lahir)->format('Y-m-d')" />
+            </div>
+        </div>
+        <div class="admin-form-section">
+            <div class="admin-form-heading"><p>Informasi akademik</p><p>Penempatan kelas, jurusan, dan status belajar saat ini.</p></div>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <x-form.input name="kelas" label="Kelas" :value="$item->kelas" placeholder="Contoh: X-1" />
+                <x-form.input name="jurusan" label="Jurusan" :value="$item->jurusan" />
+                <x-form.select name="status" label="Status" required :value="$item->status" :options="['aktif' => 'Aktif', 'lulus' => 'Lulus', 'pindah' => 'Pindah', 'nonaktif' => 'Nonaktif']" />
+            </div>
+        </div>
+        <div class="admin-form-section">
+            <div class="admin-form-heading"><p>Kontak dan wali</p><p>Informasi yang digunakan saat sekolah perlu menghubungi keluarga siswa.</p></div>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <x-form.input name="nama_wali" label="Nama Orang Tua / Wali" :value="$item->nama_wali" />
+                <x-form.input name="telepon_wali" label="Telepon Wali" :value="$item->telepon_wali" />
+                <x-form.textarea name="alamat" label="Alamat" :value="$item->alamat" class="sm:col-span-2" />
+            </div>
         </div>
 
         <div class="mt-6 flex gap-3">

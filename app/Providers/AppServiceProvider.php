@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Announcement;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -24,6 +26,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->batasiLajuPermintaan();
+
+        View::composer(['layouts.public', 'layouts.admin'], function ($view) {
+            $view->with('tickerAnnouncements', Announcement::published()->take(4)->get());
+        });
     }
 
     /**

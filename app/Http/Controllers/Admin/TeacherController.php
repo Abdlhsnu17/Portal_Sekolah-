@@ -11,9 +11,13 @@ class TeacherController extends Controller
 {
     public function index(Request $request)
     {
+        $sort = in_array($request->input('sort'), ['nip', 'nama', 'mata_pelajaran', 'jabatan', 'status'], true)
+            ? $request->input('sort') : 'nama';
+        $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
+
         return view('admin.teachers.index', [
-            'items' => Teacher::search($request->input('q'))
-                ->orderBy('nama')
+            'items' => Teacher::with('user')->search($request->input('q'))
+                ->orderBy($sort, $direction)
                 ->paginate(10)
                 ->withQueryString(),
         ]);

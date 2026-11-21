@@ -18,14 +18,15 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[620px] text-left text-sm">
+            <table data-smart-table data-table-name="guru" class="w-full min-w-[620px] text-left text-sm">
                 <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <tr>
-                        <th class="px-4 py-3">NIP</th>
-                        <th class="px-4 py-3">Nama</th>
-                        <th class="px-4 py-3">Mata Pelajaran</th>
-                        <th class="hidden px-4 py-3 xl:table-cell">Jabatan</th>
-                        <th class="px-4 py-3">Status</th>
+                        <x-sort-header column="nip" label="NIP" />
+                        <x-sort-header column="nama" label="Nama" />
+                        <x-sort-header column="mata_pelajaran" label="Mata Pelajaran" />
+                        <x-sort-header column="jabatan" label="Jabatan" class="hidden xl:table-cell" />
+                        <th class="px-4 py-3">Akun</th>
+                        <x-sort-header column="status" label="Status" />
                         <th class="sticky right-0 bg-slate-50 px-4 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -39,6 +40,27 @@
                             </td>
                             <td class="px-4 py-3 text-slate-600">{{ $item->mata_pelajaran ?: '—' }}</td>
                             <td class="hidden px-4 py-3 text-slate-600 xl:table-cell">{{ $item->jabatan ?: '—' }}</td>
+                            <td class="px-4 py-3">
+                                @if ($item->user)
+                                    @if (auth()->user()->isAdmin())
+                                        <a href="{{ route('admin.users.edit', $item->user) }}"
+                                           class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $item->user->is_active ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                                            {{ ucfirst($item->user->role) }} · {{ $item->user->is_active ? 'akun aktif' : 'akun nonaktif' }}
+                                        </a>
+                                    @else
+                                        <span class="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Akun tertaut</span>
+                                    @endif
+                                @else
+                                    @if (auth()->user()->isAdmin())
+                                        <a href="{{ route('admin.users.create', ['teacher_id' => $item->id]) }}"
+                                           class="text-xs font-semibold text-brand-700 hover:text-brand-900">
+                                            + Buat akun
+                                        </a>
+                                    @else
+                                        <span class="text-xs text-slate-500">Belum tertaut</span>
+                                    @endif
+                                @endif
+                            </td>
                             <td class="px-4 py-3">
                                 <span class="rounded-full px-2.5 py-1 text-xs font-semibold capitalize {{ $item->status === 'aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
                                     {{ $item->status }}
@@ -57,13 +79,16 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-14 text-center text-slate-500">Belum ada data guru.</td>
+                            <td colspan="7"><x-empty-state icon="academic" title="Belum ada data guru" description="Tambahkan tenaga pendidik pertama beserta penugasannya." :href="route('admin.teachers.create')" action="Tambah guru" /></td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="border-t border-slate-100 p-4">{{ $items->links() }}</div>
+        <div class="smart-table-footer border-t border-slate-100 p-4">
+            <p class="text-xs font-medium text-slate-500">Menampilkan {{ $items->firstItem() ?? 0 }}–{{ $items->lastItem() ?? 0 }} dari {{ $items->total() }} guru</p>
+            {{ $items->links() }}
+        </div>
     </div>
 @endsection

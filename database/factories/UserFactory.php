@@ -33,7 +33,7 @@ class UserFactory extends Factory
             // Ditulis eksplisit meski kolomnya punya nilai bawaan: tanpa ini model
             // hasil factory membawa role/is_active null di memori, sehingga penjaga
             // akses menolak pengguna yang di basis data sebenarnya aktif.
-            'role' => 'admin',
+            'role' => 'staf',
             'is_active' => true,
         ];
     }
@@ -43,6 +43,17 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_active' => false,
+        ]);
+    }
+
+    /** Administrator dengan MFA yang sudah dikonfirmasi. */
+    public function adminDenganMfa(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
+            'two_factor_secret' => 'JBSWY3DPEHPK3PXP',
+            'two_factor_recovery_codes' => [],
+            'two_factor_confirmed_at' => now(),
         ]);
     }
 

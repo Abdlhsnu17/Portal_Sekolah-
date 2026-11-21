@@ -11,10 +11,14 @@ class StudentController extends Controller
 {
     public function index(Request $request)
     {
+        $sort = in_array($request->input('sort'), ['nis', 'nama', 'kelas', 'jurusan', 'jenis_kelamin', 'status'], true)
+            ? $request->input('sort') : 'nama';
+        $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
+
         return view('admin.students.index', [
             'items' => Student::search($request->input('q'))
                 ->when($request->input('kelas'), fn ($query, $kelas) => $query->where('kelas', $kelas))
-                ->orderBy('nama')
+                ->orderBy($sort, $direction)
                 ->paginate(10)
                 ->withQueryString(),
             'daftarKelas' => Student::whereNotNull('kelas')->distinct()->orderBy('kelas')->pluck('kelas'),

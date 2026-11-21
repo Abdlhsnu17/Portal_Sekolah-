@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Beranda') — {{ $profil->nama ?? 'Portal Sekolah' }}</title>
     <meta name="description" content="@yield('description', 'Portal informasi resmi ' . ($profil->nama ?? 'sekolah') . '.')">
-    <meta name="theme-color" content="#1f345f">
+    <meta name="theme-color" content="#163a5f">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
     <link rel="stylesheet" href="https://fonts.bunny.net/css?family=inter:400,500,600,700|plus-jakarta-sans:600,700,800&display=swap">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-white font-sans text-slate-700 antialiased">
+
+<a href="#konten-utama" class="skip-link">Lewati ke konten utama</a>
 
 @php
     $navigasi = [
@@ -21,6 +23,8 @@
         ['rute' => 'galeri', 'label' => 'Galeri', 'aktif' => 'galeri'],
         ['rute' => 'pendaftaran.status', 'label' => 'Cek Status', 'aktif' => 'pendaftaran.status'],
     ];
+    $rutePetugas = auth()->check() ? 'admin.dashboard' : 'login';
+    $labelPetugas = auth()->check() ? 'Panel Petugas' : 'Login Petugas';
 @endphp
 
 {{-- Bar utilitas: kontak ringkas, memberi kesan situs resmi --}}
@@ -38,14 +42,14 @@
             @if ($profil?->akreditasi)
                 <span class="flex items-center gap-1.5"><x-icon name="shield-check" class="size-3.5" />Terakreditasi {{ $profil->akreditasi }}</span>
             @endif
-            <a href="{{ route('login') }}" class="flex items-center gap-1.5 transition hover:text-white">
-                <x-icon name="logout" class="size-3.5" />Login Petugas
+            <a href="{{ route($rutePetugas) }}" class="flex items-center gap-1.5 transition hover:text-white">
+                <x-icon name="logout" class="size-3.5" />{{ $labelPetugas }}
             </a>
         </div>
     </div>
 </div>
 
-<header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur-md">
+<header x-data="{ open: false }" class="site-header sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
     <div class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-3.5">
         <a href="{{ route('home') }}" class="flex items-center gap-3">
             <x-logo class="size-11 shrink-0" />
@@ -55,18 +59,17 @@
             </span>
         </a>
 
-        <nav class="hidden items-center gap-1 lg:flex">
+        <nav class="hidden items-center gap-1 lg:flex" aria-label="Navigasi utama">
             @foreach ($navigasi as $item)
+                @php $aktif = request()->routeIs($item['aktif']); @endphp
                 <a href="{{ route($item['rute']) }}"
-                   class="relative rounded-lg px-3.5 py-2 text-sm font-medium transition {{ request()->routeIs($item['aktif']) ? 'text-brand-700' : 'text-slate-600 hover:bg-slate-50 hover:text-brand-800' }}">
+                   @if($aktif) aria-current="page" @endif
+                   class="site-nav-link {{ $aktif ? 'site-nav-active' : '' }}">
                     {{ $item['label'] }}
-                    @if (request()->routeIs($item['aktif']))
-                        <span class="absolute inset-x-3.5 -bottom-0.5 h-0.5 rounded-full bg-brand-600"></span>
-                    @endif
                 </a>
             @endforeach
             <a href="{{ route('pendaftaran.form') }}"
-               class="ml-3 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-brand-800 hover:shadow-lift">
+               class="ml-3 inline-flex items-center gap-2 rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-brand-600 hover:shadow-lift">
                 Daftar Sekarang
                 <x-icon name="arrow-right" class="size-4" />
             </a>
@@ -79,11 +82,14 @@
         </button>
     </div>
 
-    <nav x-show="open" x-cloak x-transition.opacity class="border-t border-slate-200 bg-white px-6 py-4 lg:hidden">
+    <nav x-show="open" x-cloak x-transition.opacity class="border-t border-slate-200 bg-white px-6 py-4 shadow-lift lg:hidden" aria-label="Navigasi seluler">
         <div class="flex flex-col gap-1">
             @foreach ($navigasi as $item)
+                @php $aktif = request()->routeIs($item['aktif']); @endphp
                 <a href="{{ route($item['rute']) }}"
-                   class="rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs($item['aktif']) ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                   @if($aktif) aria-current="page" @endif
+                   class="relative rounded-lg px-4 py-3 text-sm font-semibold transition {{ $aktif ? 'bg-brand-50 pl-6 text-brand-800 ring-1 ring-brand-100' : 'text-slate-700 hover:bg-slate-50' }}">
+                    @if($aktif)<span class="absolute inset-y-2 left-2 w-1 rounded-full bg-brand-600"></span>@endif
                     {{ $item['label'] }}
                 </a>
             @endforeach
@@ -91,11 +97,17 @@
                class="mt-2 rounded-xl bg-brand-700 px-4 py-2.5 text-center text-sm font-semibold text-white">
                 Daftar Sekarang
             </a>
+            <a href="{{ route($rutePetugas) }}"
+               class="mt-1 flex items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-800 transition hover:bg-brand-100">
+                <x-icon name="logout" class="size-4" />{{ $labelPetugas }}
+            </a>
         </div>
     </nav>
 </header>
 
-<main>
+<x-announcement-ticker />
+
+<main id="konten-utama" tabindex="-1">
     <div class="mx-auto max-w-6xl px-6">
         <x-alert />
     </div>
@@ -143,9 +155,9 @@
                     <li class="flex items-start gap-2.5"><x-icon name="users" class="mt-0.5 size-4 shrink-0 text-slate-500" />Kepala Sekolah: {{ $profil->kepala_sekolah }}</li>
                 @endif
             </ul>
-            <a href="{{ route('login') }}"
+            <a href="{{ route($rutePetugas) }}"
                class="mt-5 inline-flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/10 transition hover:bg-white/10">
-                <x-icon name="logout" class="size-4" />Login Petugas
+                <x-icon name="logout" class="size-4" />{{ $labelPetugas }}
             </a>
         </div>
     </div>

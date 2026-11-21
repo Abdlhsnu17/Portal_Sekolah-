@@ -18,18 +18,18 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[600px] text-left text-sm">
+            <table data-smart-table data-table-name="pengguna" class="w-full min-w-[600px] text-left text-sm">
                 <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <tr>
-                        <th class="px-4 py-3">Nama</th>
-                        <th class="px-4 py-3">Peran</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3">Login Terakhir</th>
+                        <x-sort-header column="name" label="Nama" />
+                        <x-sort-header column="role" label="Peran" />
+                        <x-sort-header column="is_active" label="Status" />
+                        <x-sort-header column="last_login_at" label="Login Terakhir" />
                         <th class="sticky right-0 bg-slate-50 px-4 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                    @foreach ($items as $item)
+                    @forelse ($items as $item)
                         <tr class="group hover:bg-slate-50">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
@@ -44,6 +44,9 @@
                                             @endif
                                         </p>
                                         <p class="truncate text-xs text-slate-500">{{ $item->email }}</p>
+                                        @if ($item->teacher)
+                                            <p class="truncate text-xs font-medium text-emerald-700">Guru: {{ $item->teacher->nama }} · {{ $item->teacher->nip }}</p>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
@@ -73,11 +76,18 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="5"><x-empty-state icon="users" title="Pengguna tidak ditemukan" description="Coba ubah pencarian atau tambahkan akun pengguna baru." :href="route('admin.users.create')" action="Tambah pengguna" /></td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="border-t border-slate-100 p-4">{{ $items->links() }}</div>
+        <div class="smart-table-footer border-t border-slate-100 p-4">
+            <p class="text-xs font-medium text-slate-500">Menampilkan {{ $items->firstItem() ?? 0 }}–{{ $items->lastItem() ?? 0 }} dari {{ $items->total() }} pengguna</p>
+            {{ $items->links() }}
+        </div>
     </div>
 @endsection

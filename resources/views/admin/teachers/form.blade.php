@@ -13,20 +13,33 @@
         @csrf
         @if ($item->exists) @method('PUT') @endif
 
-        <div class="grid gap-5 sm:grid-cols-2">
+        <div class="admin-form-section">
+            <div class="admin-form-heading"><p>Identitas dan kontak</p><p>Data pokok tenaga pendidik yang tercatat di sekolah.</p></div>
+            <div class="grid gap-5 sm:grid-cols-2">
             <x-form.input name="nip" label="NIP" required :value="$item->nip" />
             <x-form.input name="nama" label="Nama Lengkap" required :value="$item->nama" />
             <x-form.input name="email" label="Email" type="email" :value="$item->email" />
             <x-form.input name="telepon" label="Telepon" :value="$item->telepon" />
             <x-form.select name="jenis_kelamin" label="Jenis Kelamin" required :value="$item->jenis_kelamin"
                            :options="['L' => 'Laki-laki', 'P' => 'Perempuan']" />
+            </div>
+        </div>
+        <div class="admin-form-section">
+            <div class="admin-form-heading"><p>Penugasan</p><p>Mata pelajaran, jabatan, dan status kepegawaian saat ini.</p></div>
+            <div class="grid gap-5 sm:grid-cols-2">
             <x-form.input name="mata_pelajaran" label="Mata Pelajaran" :value="$item->mata_pelajaran" />
             <x-form.input name="jabatan" label="Jabatan" :value="$item->jabatan" placeholder="Contoh: Wali Kelas X-1" />
             <x-form.input name="tanggal_bergabung" label="Tanggal Bergabung" type="date"
                           :value="optional($item->tanggal_bergabung)->format('Y-m-d')" />
             <x-form.select name="status" label="Status" required :value="$item->status"
                            :options="['aktif' => 'Aktif', 'cuti' => 'Cuti', 'nonaktif' => 'Nonaktif']" />
+            </div>
+        </div>
+        <div class="admin-form-section">
+            <div class="admin-form-heading"><p>Alamat</p><p>Alamat tempat tinggal untuk kebutuhan administrasi sekolah.</p></div>
+            <div class="grid gap-5 sm:grid-cols-2">
             <x-form.textarea name="alamat" label="Alamat" :value="$item->alamat" class="sm:col-span-2" />
+            </div>
         </div>
 
         <div class="mt-6 flex gap-3">

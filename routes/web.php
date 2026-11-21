@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RegistrationController;
+use App\Http\Controllers\SecurityController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -53,9 +54,20 @@ Route::prefix('pendaftaran')->name('pendaftaran.')->controller(RegistrationContr
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+    Route::get('/login/verifikasi', [AuthController::class, 'showMfa'])->name('login.mfa');
+    Route::post('/login/verifikasi', [AuthController::class, 'verifyMfa'])->middleware('throttle:login')->name('login.mfa.verify');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+Route::prefix('keamanan')->name('security.')->middleware(['auth', 'aktif'])->group(function () {
+    Route::get('/', [SecurityController::class, 'index'])->name('index');
+    Route::put('/password', [SecurityController::class, 'updatePassword'])->name('password');
+    Route::post('/mfa', [SecurityController::class, 'beginMfa'])->name('mfa.begin');
+    Route::post('/mfa/konfirmasi', [SecurityController::class, 'confirmMfa'])->name('mfa.confirm');
+    Route::delete('/mfa', [SecurityController::class, 'disableMfa'])->name('mfa.disable');
+    Route::delete('/sessions', [SecurityController::class, 'destroyOtherSessions'])->name('sessions.destroy');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -63,7 +75,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa'])->group(function () {
     Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
     // Pendaftaran

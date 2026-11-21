@@ -1,11 +1,25 @@
 @props([
     'tone' => 'light',
     'class' => '',
+    'compact' => false,
 ])
 
 @php
     $now = now('Asia/Jakarta');
     $isDark = $tone === 'dark';
+
+    $containerClass = 'flex flex-col gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between';
+    if ($compact) {
+        $containerClass = 'flex items-center gap-2';
+    }
+
+    $toneClass = 'border-slate-200 bg-white text-brand-950 shadow-card';
+    if ($isDark) {
+        $toneClass = 'border-white/15 bg-white/10 text-white ring-1 ring-white/10 backdrop-blur';
+    }
+    if ($compact) {
+        $toneClass = 'text-brand-950';
+    }
 @endphp
 
 <div
@@ -35,20 +49,28 @@
         }
     }"
     x-init="tick(); setInterval(() => tick(), 1000)"
-    {{ $attributes->merge(['class' => trim("flex flex-col gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between {$class} " . ($isDark ? 'border-white/15 bg-white/10 text-white ring-1 ring-white/10 backdrop-blur' : 'border-slate-200 bg-white text-brand-950 shadow-card'))]) }}
+    {{ $attributes->merge(['class' => trim("{$containerClass} {$toneClass} {$class}")]) }}
 >
-    <div class="flex items-center gap-3">
-        <span class="grid size-10 shrink-0 place-items-center rounded-lg {{ $isDark ? 'bg-white/10 text-accent-300 ring-1 ring-white/15' : 'bg-brand-50 text-brand-700 ring-1 ring-brand-100' }}">
-            <x-icon name="clock" class="size-5" />
-        </span>
-        <div>
-            <p class="text-[11px] font-semibold uppercase tracking-[0.12em] {{ $isDark ? 'text-brand-100/60' : 'text-slate-500' }}">Waktu</p>
-            <p class="metric mt-0.5 text-2xl leading-none tabular" x-text="time">{{ $now->format('H:i:s') }}</p>
+    @if ($compact)
+        <div class="hidden min-w-32 text-right sm:block">
+            <p class="text-[11px] font-semibold leading-4 text-slate-500" x-text="day">{{ $now->translatedFormat('l') }}</p>
+            <p class="mt-0.5 text-[10px] leading-3 text-slate-400" x-text="date">{{ $now->translatedFormat('d F Y') }}</p>
         </div>
-    </div>
+        <p class="metric rounded-lg bg-brand-950 px-3 py-2 text-sm font-bold leading-none text-white tabular shadow-[0_6px_18px_-10px_rgba(11,34,61,.75)]" x-text="time">{{ $now->format('H:i:s') }}</p>
+    @else
+        <div class="flex items-center gap-3">
+            <span class="grid size-10 shrink-0 place-items-center rounded-lg {{ $isDark ? 'bg-white/10 text-accent-300 ring-1 ring-white/15' : 'bg-brand-50 text-brand-700 ring-1 ring-brand-100' }}">
+                <x-icon name="clock" class="size-5" />
+            </span>
+            <div>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.12em] {{ $isDark ? 'text-brand-100/60' : 'text-slate-500' }}">Waktu</p>
+                <p class="metric mt-0.5 text-2xl leading-none tabular" x-text="time">{{ $now->format('H:i:s') }}</p>
+            </div>
+        </div>
 
-    <div class="border-t pt-3 text-left sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0 sm:text-right {{ $isDark ? 'border-white/10' : 'border-slate-200' }}">
-        <p class="text-sm font-bold capitalize" x-text="day">{{ $now->translatedFormat('l') }}</p>
-        <p class="mt-0.5 text-sm {{ $isDark ? 'text-brand-100/70' : 'text-slate-500' }}" x-text="date">{{ $now->translatedFormat('d F Y') }}</p>
-    </div>
+        <div class="border-t pt-3 text-left sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0 sm:text-right {{ $isDark ? 'border-white/10' : 'border-slate-200' }}">
+            <p class="text-sm font-bold capitalize" x-text="day">{{ $now->translatedFormat('l') }}</p>
+            <p class="mt-0.5 text-sm {{ $isDark ? 'text-brand-100/70' : 'text-slate-500' }}" x-text="date">{{ $now->translatedFormat('d F Y') }}</p>
+        </div>
+    @endif
 </div>

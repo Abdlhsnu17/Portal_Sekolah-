@@ -51,11 +51,20 @@ class DatabaseSeeder extends Seeder
 
     protected function pengguna(): void
     {
+        $adminPassword = env('SEED_ADMIN_PASSWORD');
+        $staffPassword = env('SEED_STAFF_PASSWORD');
+
+        if (! app()->environment(['local', 'testing']) || blank($adminPassword) || blank($staffPassword)) {
+            $this->command?->warn('Akun contoh tidak dibuat. Isi SEED_ADMIN_PASSWORD dan SEED_STAFF_PASSWORD hanya untuk lingkungan lokal.');
+
+            return;
+        }
+
         User::updateOrCreate(
             ['email' => 'admin@sekolah.test'],
             [
                 'name' => 'Administrator Sekolah',
-                'password' => 'password',
+                'password' => $adminPassword,
                 'role' => 'admin',
                 'telepon' => '081234567890',
                 'is_active' => true,
@@ -66,7 +75,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'staf@sekolah.test'],
             [
                 'name' => 'Rina Kurniawati',
-                'password' => 'password',
+                'password' => $staffPassword,
                 'role' => 'staf',
                 'telepon' => '081298765432',
                 'is_active' => true,

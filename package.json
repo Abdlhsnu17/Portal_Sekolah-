@@ -5,7 +5,10 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "postinstall": "npm run build"
+        "postinstall": "npm run build",
+        "test:smoke": "python3 tests/run_selenium.py smoke",
+        "test:e2e": "python3 tests/run_selenium.py e2e",
+        "test:selenium": "python3 tests/run_selenium.py all"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

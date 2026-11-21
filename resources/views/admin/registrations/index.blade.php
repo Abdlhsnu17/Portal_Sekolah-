@@ -27,15 +27,15 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[640px] text-left text-sm">
+            <table data-smart-table data-table-name="pendaftaran" class="w-full min-w-[640px] text-left text-sm">
                 <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <tr>
-                        <th class="px-4 py-3">Nomor</th>
-                        <th class="px-4 py-3">Nama</th>
-                        <th class="hidden px-4 py-3 xl:table-cell">Asal Sekolah</th>
-                        <th class="hidden px-4 py-3 lg:table-cell">Jurusan</th>
+                        <x-sort-header column="nomor_pendaftaran" label="Nomor" />
+                        <x-sort-header column="nama_lengkap" label="Nama" />
+                        <x-sort-header column="asal_sekolah" label="Asal Sekolah" class="hidden xl:table-cell" />
+                        <x-sort-header column="jurusan_pilihan" label="Jurusan" class="hidden lg:table-cell" />
                         <th class="px-4 py-3 text-center">Dokumen</th>
-                        <th class="px-4 py-3">Status</th>
+                        <x-sort-header column="status" label="Status" />
                         <th class="sticky right-0 bg-slate-50 px-4 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -64,13 +64,16 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-14 text-center text-slate-500">Tidak ada data pendaftaran.</td>
+                            <td colspan="7"><x-empty-state icon="clipboard" title="Pendaftaran tidak ditemukan" description="Coba ubah kata pencarian atau pilih status pendaftaran lainnya." :href="route('admin.registrations.index')" action="Reset filter" /></td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="border-t border-slate-100 p-4">{{ $items->links() }}</div>
+        <div class="smart-table-footer border-t border-slate-100 p-4">
+            <p class="text-xs font-medium text-slate-500">Menampilkan {{ $items->firstItem() ?? 0 }}–{{ $items->lastItem() ?? 0 }} dari {{ $items->total() }} pendaftaran</p>
+            {{ $items->links() }}
+        </div>
     </div>
 @endsection

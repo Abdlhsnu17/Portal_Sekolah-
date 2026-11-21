@@ -84,12 +84,20 @@ composer run dev
 
 ## Akun Demo
 
-Seeder membuat akun berikut:
+Seeder hanya membuat akun contoh pada lingkungan `local`/`testing` apabila
+`SEED_ADMIN_PASSWORD` dan `SEED_STAFF_PASSWORD` diisi. Gunakan password kuat dan
+jangan pernah mengaktifkan akun demo di production.
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Admin | `admin@sekolah.test` | `password` |
-| Staf | `staf@sekolah.test` | `password` |
+Untuk production, gunakan HTTPS dan konfigurasi minimum berikut:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+SESSION_ENCRYPT=true
+SESSION_SECURE_COOKIE=true
+SESSION_HTTP_ONLY=true
+SESSION_SAME_SITE=lax
+```
 
 Panel admin tersedia di:
 
@@ -131,11 +139,24 @@ Vite versi saat ini meminta Node.js `20.19+` atau `22.12+`. Jika build memberi w
 
 ## Testing
 
-Jalankan test Laravel:
+Suite lama telah diganti dengan pengujian browser Selenium. Siapkan dependensi:
 
 ```bash
-php artisan test
+python3 -m pip install -r requirements-e2e.txt
 ```
+
+Google Chrome/Chromium harus tersedia. Driver browser dikelola otomatis oleh
+Selenium Manager. Jalankan suite sesuai kebutuhan:
+
+```bash
+npm run test:smoke
+npm run test:e2e
+npm run test:selenium
+```
+
+Runner memakai database SQLite sementara, menjalankan server Laravel sendiri,
+dan menghapus database setelah selesai. Pengujian tidak mengambil screenshot
+atau video, sehingga tidak ada gambar hasil test lama yang tersimpan.
 
 ## Dokumen Produk
 

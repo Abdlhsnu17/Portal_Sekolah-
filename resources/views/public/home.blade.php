@@ -33,7 +33,7 @@
 
                 <div class="mt-9 flex flex-wrap gap-3">
                     <a href="{{ route('pendaftaran.form') }}"
-                       class="group inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-brand-800 shadow-lift transition hover:bg-brand-50">
+                       class="group inline-flex items-center gap-2 rounded-xl bg-accent-500 px-7 py-3.5 text-sm font-semibold text-brand-950 shadow-lift transition hover:bg-accent-400">
                         Daftar Sekarang
                         <x-icon name="arrow-right" class="size-4 transition group-hover:translate-x-0.5" />
                     </a>
@@ -76,6 +76,47 @@
                         </div>
                     @endforeach
                 </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- Sambutan dan program unggulan --}}
+    <section class="bg-brand-50/60">
+        <div class="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-12 lg:items-start">
+            <div class="lg:col-span-5">
+                <p class="eyebrow text-brand-600">Selamat Datang</p>
+                <h2 class="mt-3 text-3xl font-bold tracking-tight text-brand-950">Sekolah tempat potensi tumbuh</h2>
+                <blockquote class="mt-6 border-l-4 border-accent-500 pl-5 text-base leading-relaxed text-slate-600">
+                    “Kami mendampingi setiap siswa untuk bertumbuh dalam karakter, pengetahuan, dan keberanian meraih cita-cita.”
+                </blockquote>
+                <div class="mt-5 flex items-center gap-3">
+                    <span class="grid size-11 place-items-center rounded-full bg-brand-800 text-sm font-bold text-white">
+                        {{ strtoupper(substr($profil->kepala_sekolah ?: 'KS', 0, 1)) }}
+                    </span>
+                    <div>
+                        <p class="text-sm font-bold text-brand-950">{{ $profil->kepala_sekolah ?: 'Kepala Sekolah' }}</p>
+                        <p class="text-xs text-slate-500">Kepala {{ $profil->nama ?? 'Sekolah' }}</p>
+                    </div>
+                </div>
+                <a href="{{ route('profil') }}" class="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 transition hover:text-brand-800">
+                    Pelajari profil sekolah <x-icon name="arrow-right" class="size-4" />
+                </a>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-3 lg:col-span-7">
+                @foreach ([
+                    ['ikon' => 'academic', 'judul' => 'Akademik', 'teks' => 'Pembelajaran terarah yang mendorong rasa ingin tahu dan prestasi.'],
+                    ['ikon' => 'sparkles', 'judul' => 'Karakter', 'teks' => 'Kebiasaan baik, tanggung jawab, dan kepedulian dalam keseharian.'],
+                    ['ikon' => 'trophy', 'judul' => 'Talenta', 'teks' => 'Ruang bagi siswa untuk berkembang melalui kegiatan dan kompetisi.'],
+                ] as $program)
+                    <article class="rounded-2xl border border-brand-100 bg-white p-6 shadow-card transition hover:-translate-y-1 hover:shadow-lift">
+                        <span class="grid size-12 place-items-center rounded-xl bg-brand-100 text-brand-700">
+                            <x-icon :name="$program['ikon']" class="size-6" />
+                        </span>
+                        <h3 class="mt-5 text-base font-bold text-brand-950">{{ $program['judul'] }}</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ $program['teks'] }}</p>
+                    </article>
+                @endforeach
             </div>
         </div>
     </section>
