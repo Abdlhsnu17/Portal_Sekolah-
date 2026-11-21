@@ -6,13 +6,54 @@ use App\Http\Controllers\Controller;
 use App\Models\StaffMember;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Support\SecurityAudit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 class StaffMemberController extends Controller
 {
+    public function createTeacherAccounts(Request $request)
+    {
+        $created = [];
+        $skipped = 0;
+
+        DB::transaction(function () use (&$created, &$skipped) {
+            Teacher::query()->whereNull('user_id')->orderBy('id')->lockForUpdate()->each(function (Teacher $teacher) use (&$created, &$skipped) {
+                $email = strtolower(trim((string) $teacher->email));
+                if (! filter_var($email, FILTER_VALIDATE_EMAIL) || User::whereRaw('LOWER(email) = ?', [$email])->exists()) {
+                    $skipped++;
+                    return;
+                }
+
+                $temporaryPassword = Str::random(20).'aA1!';
+                $user = User::create([
+                    'name' => $teacher->nama,
+                    'email' => $email,
+                    'password' => Hash::make($temporaryPassword),
+                    'role' => 'guru',
+                    'telepon' => $teacher->telepon,
+                    'is_active' => $teacher->status === 'aktif',
+                    'password_changed_at' => now()->subYears(100),
+                ]);
+                $teacher->update(['user_id' => $user->id]);
+                $created[] = ['name' => $teacher->nama, 'email' => $email, 'password' => $temporaryPassword];
+            });
+        });
+
+        foreach ($created as $account) {
+            SecurityAudit::record('user.created_from_teacher', $request->user(), $request, ['target_email_hash' => hash('sha256', $account['email'])]);
+        }
+
+        $request->session()->flash('teacher_account_credentials', $created);
+
+        return redirect()->route('admin.staff.index', ['type' => 'teacher', 'account' => 'unlinked'])
+            ->with('success', count($created).' akun guru dibuat; '.$skipped.' data dilewati karena email kosong/tidak valid atau sudah digunakan.');
+    }
+
     public function index(Request $request)
     {
         $sort = in_array($request->input('sort'), ['nip', 'nama', 'jabatan', 'status'], true)

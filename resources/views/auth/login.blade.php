@@ -91,8 +91,11 @@
                     </label>
                     <div class="relative mt-1.5">
                         <input :type="tampilkanSandi ? 'text' : 'password'" name="password" id="password" required autocomplete="current-password"
-                               class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-20 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-400 focus:ring-4 focus:ring-brand-100/70">
-                        <button type="button" @click="tampilkanSandi = !tampilkanSandi" class="absolute inset-y-0 right-0 px-4 text-xs font-semibold text-brand-600 transition hover:text-brand-800" x-text="tampilkanSandi ? 'Sembunyikan' : 'Lihat'"></button>
+                               class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-400 focus:ring-4 focus:ring-brand-100/70">
+                        <button type="button" @click="tampilkanSandi = !tampilkanSandi" :aria-label="tampilkanSandi ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'" :aria-pressed="tampilkanSandi" class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 transition hover:text-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500" autocomplete="off">
+                            <svg x-show="!tampilkanSandi" class="size-5" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.5-6.75 9.75-6.75S21.75 12 21.75 12 18.25 18.75 12 18.75 2.25 12 2.25 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg x-show="tampilkanSandi" x-cloak class="size-5" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18M10.58 10.59a2 2 0 0 0 2.83 2.83M9.88 5.24A10.9 10.9 0 0 1 12 5.04c6.25 0 9.75 6.96 9.75 6.96a17 17 0 0 1-3.1 3.95M6.18 6.2C3.65 7.9 2.25 12 2.25 12s3.5 6.96 9.75 6.96c1.26 0 2.4-.3 3.4-.78"/></svg>
+                        </button>
                     </div>
                 </div>
 
@@ -116,7 +119,7 @@
                 <button type="submit"
                         :disabled="memuat"
                         class="group flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3.5 text-sm font-semibold text-white shadow-lift transition hover:bg-brand-600 disabled:cursor-wait disabled:opacity-70">
-                    <span x-text="memuat ? 'Memproses...' : 'Masuk ke Panel'"></span>
+                    <span x-text="memuat ? 'Memproses...' : 'Masuk'"></span>
                     <x-icon name="login" class="size-4" />
                 </button>
             </form>

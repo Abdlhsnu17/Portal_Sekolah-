@@ -66,13 +66,17 @@
                                 {{ $item->last_login_at ? $item->last_login_at->diffForHumans() : 'Belum pernah' }}
                             </td>
                             <td class="sticky right-0 bg-white px-4 py-3 group-hover:bg-slate-50">
-                                <div class="flex items-center justify-end gap-3">
-                                    <a href="{{ route('admin.users.edit', $item) }}" class="font-semibold text-brand-700 hover:text-brand-900">Ubah</a>
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="{{ route('admin.users.edit', $item) }}" aria-label="Ubah pengguna {{ $item->name }}" title="Ubah" class="inline-flex size-9 items-center justify-center rounded-lg text-brand-700 transition hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+                                        <x-icon name="pencil" class="size-5" />
+                                    </a>
                                     @unless ($item->is(auth()->user()))
                                         <form method="POST" action="{{ route('admin.users.destroy', $item) }}"
                                               onsubmit="return confirm('Hapus pengguna ini?')">
                                             @csrf @method('DELETE')
-                                            <button class="font-semibold text-rose-600 hover:text-rose-800">Hapus</button>
+                                            <button aria-label="Hapus pengguna {{ $item->name }}" title="Hapus" class="inline-flex size-9 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+                                                <x-icon name="trash" class="size-5" />
+                                            </button>
                                         </form>
                                     @endunless
                                 </div>

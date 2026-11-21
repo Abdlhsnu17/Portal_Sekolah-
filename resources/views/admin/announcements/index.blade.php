@@ -65,16 +65,20 @@
                                 {{ optional($item->published_at ?? $item->created_at)->translatedFormat('d M Y') }}
                             </td>
                             <td class="sticky right-0 bg-white px-4 py-3 group-hover:bg-slate-50">
-                                <div class="flex items-center justify-end gap-3">
+                                <div class="flex items-center justify-end gap-2">
                                     @if ($item->is_published)
                                         <a href="{{ route('berita.detail', $item->slug) }}" target="_blank"
                                            class="font-semibold text-slate-500 hover:text-slate-700">Lihat</a>
                                     @endif
-                                    <a href="{{ route('admin.announcements.edit', $item) }}" class="font-semibold text-brand-700 hover:text-brand-900">Ubah</a>
+                                    <a href="{{ route('admin.announcements.edit', $item) }}" aria-label="Ubah konten {{ $item->judul }}" title="Ubah" class="inline-flex size-9 items-center justify-center rounded-lg text-brand-700 transition hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+                                        <x-icon name="pencil" class="size-5" />
+                                    </a>
                                     <form method="POST" action="{{ route('admin.announcements.destroy', $item) }}"
                                           onsubmit="return confirm('Hapus konten ini?')">
                                         @csrf @method('DELETE')
-                                        <button class="font-semibold text-rose-600 hover:text-rose-800">Hapus</button>
+                                        <button aria-label="Hapus konten {{ $item->judul }}" title="Hapus" class="inline-flex size-9 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+                                            <x-icon name="trash" class="size-5" />
+                                        </button>
                                     </form>
                                 </div>
                             </td>

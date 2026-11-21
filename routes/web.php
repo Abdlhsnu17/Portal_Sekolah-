@@ -106,6 +106,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa'])->gr
 
     // Tenaga kependidikan (khusus admin)
     Route::resource('staff', Admin\StaffMemberController::class)->except('show')->middleware('admin');
+    Route::post('/staff/akun-guru', [Admin\StaffMemberController::class, 'createTeacherAccounts'])->middleware('admin')->name('staff.teacher-accounts');
 
     // Absensi pegawai (khusus admin)
     Route::get('attendances/export', [Admin\AttendanceController::class, 'export'])->name('attendances.export')->middleware('admin');

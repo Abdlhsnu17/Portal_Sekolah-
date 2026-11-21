@@ -138,7 +138,7 @@ class AuthController extends Controller
             Auth::user()->notify(new NewLoginNotification((string) $request->ip(), (string) $request->userAgent()));
         }
 
-        return redirect()->intended(route('admin.dashboard'))
+        return redirect()->intended(Auth::user()->password_changed_at?->lt(now()->subYears(50)) ? route('security.index') : route('admin.dashboard'))
             ->with('success', 'Selamat datang kembali, '.Auth::user()->name.'!');
     }
 

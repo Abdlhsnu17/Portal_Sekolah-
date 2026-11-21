@@ -28,6 +28,11 @@ class EnsureUserIsActive
             ]);
         }
 
+        if ($request->user() && $request->user()->password_changed_at?->lt(now()->subYears(50))
+            && ! $request->routeIs('security.index', 'security.password', 'logout')) {
+            return redirect()->route('security.index')->with('warning', 'Ganti kata sandi sementara sebelum menggunakan aplikasi.');
+        }
+
         return $next($request);
     }
 }

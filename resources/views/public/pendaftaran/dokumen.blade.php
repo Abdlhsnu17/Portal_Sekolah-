@@ -81,7 +81,9 @@
                                           action="{{ route('pendaftaran.dokumen.hapus', [$registration->nomor_pendaftaran, $doc->id]) }}"
                                           onsubmit="return confirm('Hapus dokumen ini?')">
                                         @csrf @method('DELETE')
-                                        <button class="rounded-lg px-2.5 py-1.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50">Hapus</button>
+                                        <button aria-label="Hapus dokumen {{ $doc->jenis }}" title="Hapus" class="inline-flex size-9 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+                                            <x-icon name="trash" class="size-5" />
+                                        </button>
                                     </form>
                                 </div>
                             </li>

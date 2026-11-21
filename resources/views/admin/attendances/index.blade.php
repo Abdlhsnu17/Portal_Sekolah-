@@ -67,10 +67,15 @@
                                         <button name="decision" value="rejected" class="text-xs font-semibold text-rose-600">Tolak</button>
                                     </form>
                                 @endif
-                                <div class="flex justify-end gap-3 text-xs">
-                                    <a href="{{ route('admin.attendances.edit', $item) }}" class="font-semibold text-brand-700">Ubah</a>
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ route('admin.attendances.edit', $item) }}" aria-label="Ubah catatan absensi" title="Ubah" class="inline-flex size-9 items-center justify-center rounded-lg text-brand-700 transition hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+                                        <x-icon name="pencil" class="size-5" />
+                                    </a>
                                     <form method="POST" action="{{ route('admin.attendances.destroy', $item) }}" onsubmit="return confirm('Hapus catatan absensi ini?')">
-                                        @csrf @method('DELETE')<button class="font-semibold text-rose-600">Hapus</button>
+                                        @csrf @method('DELETE')
+                                        <button aria-label="Hapus catatan absensi" title="Hapus" class="inline-flex size-9 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+                                            <x-icon name="trash" class="size-5" />
+                                        </button>
                                     </form>
                                 </div>
                             </td>
