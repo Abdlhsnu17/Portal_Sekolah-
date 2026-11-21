@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class NotificationController extends Controller
 {
@@ -22,5 +23,18 @@ class NotificationController extends Controller
         $request->user()->unreadNotifications()->update(['read_at' => now()]);
 
         return back()->with('success', 'Semua pemberitahuan ditandai sudah dibaca.');
+    }
+
+    public function destroy(Request $request, string $notification): RedirectResponse
+    {
+        $item = $request->user()->notifications()->findOrFail($notification);
+
+        if (! $item->read_at) {
+            return back()->with('error', 'Pemberitahuan harus dibaca sebelum dapat dihapus.');
+        }
+
+        $item->delete();
+
+        return back()->with('success', 'Pemberitahuan berhasil dihapus.');
     }
 }

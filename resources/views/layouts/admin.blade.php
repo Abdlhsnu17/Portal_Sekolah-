@@ -162,8 +162,9 @@
                         </div>
                         <div class="max-h-96 overflow-y-auto">
                             @forelse ($headerNotifications as $notification)
-                                <a href="{{ route('notifications.read', $notification) }}" role="menuitem"
-                                   class="flex gap-3 border-b border-slate-100 px-4 py-3 transition hover:bg-slate-50 {{ $notification->read_at ? '' : 'bg-brand-50/60' }}">
+                                <div class="flex items-start gap-2 border-b border-slate-100 px-4 py-3 transition hover:bg-slate-50 {{ $notification->read_at ? '' : 'bg-brand-50/60' }}">
+                                  <a href="{{ route('notifications.read', $notification) }}" role="menuitem"
+                                   class="flex min-w-0 flex-1 gap-3">
                                     <span class="mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg {{ $notification->read_at ? 'bg-slate-100 text-slate-500' : 'bg-brand-100 text-brand-700' }}">
                                         <x-icon :name="$notification->data['icon'] ?? 'bell'" class="size-4.5" />
                                     </span>
@@ -175,7 +176,18 @@
                                         <span class="mt-0.5 block text-xs leading-5 text-slate-500">{{ $notification->data['message'] ?? '' }}</span>
                                         <span class="mt-1 block text-[10px] font-medium text-slate-400">{{ $notification->created_at->diffForHumans() }}</span>
                                     </span>
-                                </a>
+                                  </a>
+                                  @if ($notification->read_at)
+                                      <form method="POST" action="{{ route('notifications.destroy', $notification) }}" class="shrink-0">
+                                          @csrf
+                                          @method('DELETE')
+                                          <button type="submit" aria-label="Hapus pemberitahuan" title="Hapus pemberitahuan"
+                                                  class="grid size-8 place-items-center rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-rose-600">
+                                              <x-icon name="trash" class="size-4" />
+                                          </button>
+                                      </form>
+                                  @endif
+                                </div>
                             @empty
                                 <div class="px-6 py-10 text-center">
                                     <span class="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-slate-100 text-slate-400"><x-icon name="bell" /></span>

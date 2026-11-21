@@ -64,6 +64,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 
 Route::prefix('pemberitahuan')->name('notifications.')->middleware(['auth', 'aktif'])->group(function () {
     Route::post('/baca-semua', [NotificationController::class, 'readAll'])->name('read-all');
+    Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
     Route::get('/{notification}', [NotificationController::class, 'read'])->name('read');
 });
 
