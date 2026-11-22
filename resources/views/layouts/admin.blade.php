@@ -286,16 +286,6 @@
                                         <button class="text-xs font-semibold text-brand-700 hover:text-brand-900">Tandai semua dibaca</button>
                                     </form>
                                 @endif
-                                @if ($headerNotifications->isNotEmpty())
-                                    <form method="POST" action="{{ route('notifications.destroy-all') }}"
-                                          data-confirm-delete
-                                          data-delete-title="Hapus semua pemberitahuan?"
-                                          data-delete-description="Seluruh pemberitahuan akan dihapus permanen dan tidak dapat dikembalikan.">
-                                    @csrf
-                                    @method('DELETE')
-                                        <button type="submit" aria-label="Hapus semua pemberitahuan" title="Hapus semua" class="inline-flex size-8 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"><x-icon name="trash" class="size-4" /></button>
-                                    </form>
-                                @endif
                             </div>
                         </div>
                         <div class="max-h-96 overflow-y-auto">
@@ -315,16 +305,6 @@
                                         <span class="mt-1 block text-[10px] font-medium text-slate-400">{{ $notification->created_at->diffForHumans() }}</span>
                                     </span>
                                   </a>
-                                  @if ($notification->read_at)
-                                      <form method="POST" action="{{ route('notifications.destroy', $notification) }}" class="shrink-0" data-confirm-delete>
-                                          @csrf
-                                          @method('DELETE')
-                                          <button type="submit" aria-label="Hapus pemberitahuan" title="Hapus pemberitahuan"
-                                                  class="grid size-8 place-items-center rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-rose-600">
-                                              <x-icon name="trash" class="size-4" />
-                                          </button>
-                                      </form>
-                                  @endif
                                 </div>
                             @empty
                                 <div class="px-6 py-10 text-center">

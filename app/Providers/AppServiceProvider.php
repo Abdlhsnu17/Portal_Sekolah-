@@ -55,6 +55,9 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.admin', function ($view) {
             $user = auth()->user();
+            // Pemberitahuan bersifat sementara: yang sudah dibaca tidak perlu
+            // terus memenuhi panel ketika pengguna membuka halaman berikutnya.
+            $user?->readNotifications()->delete();
             $view->with([
                 'headerNotifications' => $user?->notifications()->latest()->limit(8)->get() ?? collect(),
                 'unreadNotificationCount' => $user?->unreadNotifications()->count() ?? 0,
