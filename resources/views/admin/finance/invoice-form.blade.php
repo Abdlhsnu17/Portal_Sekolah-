@@ -20,7 +20,7 @@
                 <label for="invoice-category" class="mb-1.5 block text-sm font-semibold text-slate-700">Kategori tagihan <span class="text-rose-500">*</span></label>
                 <select id="invoice-category" name="category" required class="w-full rounded-lg border-slate-200 py-2.5 text-sm focus:border-brand-500 focus:ring-brand-500">
                     <option value="" disabled @selected(! old('category', $invoice->category))>Pilih kategori tagihan</option>
-                    @foreach(\App\Models\StudentInvoice::CATEGORIES as $value => $label)
+                    @foreach($categories as $value => $label)
                         <option value="{{ $value }}" @selected(old('category', $invoice->category) === $value)>{{ $label }}</option>
                     @endforeach
                 </select>

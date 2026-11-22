@@ -178,6 +178,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa', 'int
     Route::get('laporan/absensi-siswa', [Admin\ReportExportController::class, 'attendances'])->middleware('admin')->name('reports.attendances');
     Route::get('laporan/nilai', [Admin\ReportExportController::class, 'scores'])->middleware('admin')->name('reports.scores');
     Route::get('keuangan', [Admin\FinanceController::class, 'index'])->middleware('admin')->name('finance.index');
+    Route::get('keuangan/siswa', [Admin\FinanceController::class, 'searchStudents'])->middleware('admin')->name('finance.students.search');
     Route::post('keuangan/tagihan', [Admin\FinanceController::class, 'storeInvoice'])->middleware('admin')->name('finance.invoices.store');
     Route::get('keuangan/tagihan/{invoice}/edit', [Admin\FinanceController::class, 'editInvoice'])->middleware('admin')->name('finance.invoices.edit');
     Route::put('keuangan/tagihan/{invoice}', [Admin\FinanceController::class, 'updateInvoice'])->middleware('admin')->name('finance.invoices.update');

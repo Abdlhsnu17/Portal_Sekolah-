@@ -13,8 +13,8 @@ use App\Models\Teacher;
 use App\Models\TeachingAssignment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class RoleAccessTest extends TestCase
@@ -46,6 +46,29 @@ class RoleAccessTest extends TestCase
 
         $this->get(route('admin.registrations.index'))->assertOk();
         $this->get(route('admin.students.index'))->assertOk();
+    }
+
+    public function test_internal_user_can_update_a_student_record(): void
+    {
+        $staff = User::factory()->create(['role' => 'staf']);
+        $student = Student::create(['nis' => 'S-EDIT-001', 'nama' => 'Nama Lama']);
+
+        $this->actingAs($staff)
+            ->put(route('admin.students.update', $student), [
+                'nis' => 'S-EDIT-001',
+                'nama' => 'Nama Baru',
+                'jenis_kelamin' => 'P',
+                'kelas' => 'X-1',
+                'status' => 'aktif',
+            ])
+            ->assertRedirect(route('admin.students.index'));
+
+        $this->assertDatabaseHas('students', [
+            'id' => $student->id,
+            'nama' => 'Nama Baru',
+            'jenis_kelamin' => 'P',
+            'kelas' => 'X-1',
+        ]);
     }
 
     public function test_staff_login_redirects_to_the_staff_dashboard(): void

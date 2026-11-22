@@ -24,6 +24,24 @@ class FinanceCrudTest extends TestCase
             ->assertOk();
     }
 
+    public function test_admin_can_search_active_students_for_invoice_creation(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $matchingStudent = Student::create(['nis' => 'FIN-SEARCH-01', 'nama' => 'Alya Pencarian']);
+        Student::create(['nis' => 'FIN-SEARCH-02', 'nama' => 'Alya Nonaktif', 'status' => 'nonaktif']);
+
+        $this->actingAs(User::factory()->create(['role' => 'staf']))
+            ->getJson(route('admin.finance.students.search', ['q' => 'Alya']))
+            ->assertForbidden();
+
+        $this->actingAs($admin)
+            ->getJson(route('admin.finance.students.search', ['q' => 'Pencarian']))
+            ->assertOk()
+            ->assertJsonPath('data.0.id', (string) $matchingStudent->id)
+            ->assertJsonPath('data.0.label', 'FIN-SEARCH-01 — Alya Pencarian')
+            ->assertJsonCount(1, 'data');
+    }
+
     public function test_admin_can_create_update_and_delete_an_invoice_without_payments(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
