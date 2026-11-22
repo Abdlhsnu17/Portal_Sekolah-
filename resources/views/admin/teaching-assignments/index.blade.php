@@ -16,11 +16,55 @@
             <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
                 <h2 class="text-lg font-bold text-brand-950">Tetapkan guru mapel</h2>
                 <p class="mt-1 text-sm text-slate-500">Pilih guru, mata pelajaran, dan kelas untuk tahun ajaran yang bersangkutan.</p>
-                <form method="POST" action="{{ route('admin.teaching-assignments.store') }}" class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <form method="POST" action="{{ route('admin.teaching-assignments.store') }}" class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4" x-data="{ teachers: @js($teachers->map(fn ($teacher) => ['id' => (string) $teacher->id, 'label' => $teacher->nama.' — '.$teacher->nip])->values()), subjects: @js($subjects->map(fn ($subject) => ['id' => (string) $subject->id, 'label' => $subject->nama])->values()), classes: @js(collect($classes)->map(fn ($class) => ['value' => (string) $class, 'label' => (string) $class])->values()), selectedId: @js((string) old('teacher_id', '')), selectedSubjectId: @js((string) old('subject_id', '')), selectedClass: @js((string) old('kelas', '')), search: '', subjectSearch: '', classSearch: '', open: false, subjectOpen: false, classOpen: false, get filteredTeachers() { const query = this.search.trim().toLocaleLowerCase('id'); return query ? this.teachers.filter((teacher) => teacher.label.toLocaleLowerCase('id').includes(query)) : this.teachers; }, get filteredSubjects() { const query = this.subjectSearch.trim().toLocaleLowerCase('id'); return query ? this.subjects.filter((subject) => subject.label.toLocaleLowerCase('id').includes(query)) : this.subjects; }, get filteredClasses() { const query = this.classSearch.trim().toLocaleLowerCase('id'); return query ? this.classes.filter((schoolClass) => schoolClass.label.toLocaleLowerCase('id').includes(query)) : this.classes; }, init() { this.search = this.teachers.find((teacher) => teacher.id === this.selectedId)?.label ?? ''; this.subjectSearch = this.subjects.find((subject) => subject.id === this.selectedSubjectId)?.label ?? ''; this.classSearch = this.classes.find((schoolClass) => schoolClass.value === this.selectedClass)?.label ?? ''; }, selectTeacher(teacher) { this.selectedId = teacher.id; this.search = teacher.label; this.open = false; $refs.teacherSearch.setCustomValidity(''); }, selectSubject(subject) { this.selectedSubjectId = subject.id; this.subjectSearch = subject.label; this.subjectOpen = false; $refs.subjectSearch.setCustomValidity(''); }, selectClass(schoolClass) { this.selectedClass = schoolClass.value; this.classSearch = schoolClass.label; this.classOpen = false; $refs.classSearch.setCustomValidity(''); }, validateSelection(ref, value, message) { if (!value) { $refs[ref].setCustomValidity(message); $refs[ref].reportValidity(); return false; } $refs[ref].setCustomValidity(''); return true; }, validateSelections() { return this.validateSelection('teacherSearch', this.selectedId, 'Pilih guru dari daftar yang tersedia.') && this.validateSelection('subjectSearch', this.selectedSubjectId, 'Pilih mata pelajaran dari daftar yang tersedia.') && this.validateSelection('classSearch', this.selectedClass, 'Pilih kelas dari daftar yang tersedia.'); } }" @click.outside="open = false; subjectOpen = false; classOpen = false" @submit="if (!validateSelections()) $event.preventDefault()">
                     @csrf
-                    <x-form.select name="teacher_id" label="Guru" required :options="$teachers->pluck('nama', 'id')->all()" placeholder="Pilih guru" />
-                    <x-form.select name="subject_id" label="Mata pelajaran" required :options="$subjects->pluck('nama', 'id')->all()" placeholder="Pilih mata pelajaran" />
-                    <div><x-form.input name="kelas" label="Kelas" required list="daftar-kelas" placeholder="Contoh: X-A" /><datalist id="daftar-kelas">@foreach($classes as $class)<option value="{{ $class }}">@endforeach</datalist></div>
+                    <div>
+                        <div class="mb-2 flex items-baseline justify-between gap-3">
+                            <label for="assignment-teacher-search" class="block text-sm font-semibold text-slate-800">Guru <span class="text-rose-500">*</span></label>
+                        </div>
+                        <div class="relative">
+                            <input type="hidden" name="teacher_id" :value="selectedId">
+                            <input id="assignment-teacher-search" x-ref="teacherSearch" type="search" autocomplete="off" required x-model="search" @focus="open = true" @input="selectedId = ''; open = true; $el.setCustomValidity('')" @keydown.escape="open = false" @keydown.enter.prevent="if (filteredTeachers.length === 1) selectTeacher(filteredTeachers[0]); else open = true" :aria-expanded="open.toString()" aria-controls="assignment-teacher-options" aria-autocomplete="list" role="combobox" placeholder="Ketik nama atau NIP guru..." class="w-full rounded-lg border-slate-200 py-2.5 pl-3 pr-10 text-sm focus:border-brand-500 focus:ring-brand-500">
+                            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400"><x-icon name="chevron-right" class="size-4 rotate-90" /></span>
+                            <div id="assignment-teacher-options" x-show="open" x-cloak x-transition role="listbox" aria-label="Daftar guru" class="absolute z-20 mt-2 max-h-60 w-full overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white py-1 shadow-lift">
+                                <template x-for="teacher in filteredTeachers" :key="teacher.id">
+                                    <button type="button" role="option" :aria-selected="selectedId === teacher.id" @click="selectTeacher(teacher)" class="block w-full px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-800" :class="selectedId === teacher.id ? 'bg-brand-50 font-semibold text-brand-800' : ''" x-text="teacher.label"></button>
+                                </template>
+                                <p x-show="filteredTeachers.length === 0" class="px-3 py-3 text-sm text-slate-500">Guru tidak ditemukan.</p>
+                            </div>
+                        </div>
+                        @error('teacher_id')<p class="mt-1.5 text-xs font-medium text-rose-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <div class="mb-2 flex items-baseline justify-between gap-3">
+                            <label for="assignment-subject-search" class="block text-sm font-semibold text-slate-800">Mata pelajaran <span class="text-rose-500">*</span></label>
+                        </div>
+                        <div class="relative">
+                            <input type="hidden" name="subject_id" :value="selectedSubjectId">
+                            <input id="assignment-subject-search" x-ref="subjectSearch" type="search" autocomplete="off" required x-model="subjectSearch" @focus="subjectOpen = true" @input="selectedSubjectId = ''; subjectOpen = true; $el.setCustomValidity('')" @keydown.escape="subjectOpen = false" @keydown.enter.prevent="if (filteredSubjects.length === 1) selectSubject(filteredSubjects[0]); else subjectOpen = true" :aria-expanded="subjectOpen.toString()" aria-controls="assignment-subject-options" aria-autocomplete="list" role="combobox" placeholder="Ketik mata pelajaran..." class="w-full rounded-lg border-slate-200 py-2.5 pl-3 pr-10 text-sm focus:border-brand-500 focus:ring-brand-500">
+                            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400"><x-icon name="chevron-right" class="size-4 rotate-90" /></span>
+                            <div id="assignment-subject-options" x-show="subjectOpen" x-cloak x-transition role="listbox" aria-label="Daftar mata pelajaran" class="absolute z-20 mt-2 max-h-60 w-full overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white py-1 shadow-lift">
+                                <template x-for="subject in filteredSubjects" :key="subject.id"><button type="button" role="option" :aria-selected="selectedSubjectId === subject.id" @click="selectSubject(subject)" class="block w-full px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-800" :class="selectedSubjectId === subject.id ? 'bg-brand-50 font-semibold text-brand-800' : ''" x-text="subject.label"></button></template>
+                                <p x-show="filteredSubjects.length === 0" class="px-3 py-3 text-sm text-slate-500">Mata pelajaran tidak ditemukan.</p>
+                            </div>
+                        </div>
+                        @error('subject_id')<p class="mt-1.5 text-xs font-medium text-rose-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <div class="mb-2 flex items-baseline justify-between gap-3">
+                            <label for="assignment-class-search" class="block text-sm font-semibold text-slate-800">Kelas <span class="text-rose-500">*</span></label>
+                        </div>
+                        <div class="relative">
+                            <input type="hidden" name="kelas" :value="selectedClass">
+                            <input id="assignment-class-search" x-ref="classSearch" type="search" autocomplete="off" required x-model="classSearch" @focus="classOpen = true" @input="selectedClass = ''; classOpen = true; $el.setCustomValidity('')" @keydown.escape="classOpen = false" @keydown.enter.prevent="if (filteredClasses.length === 1) selectClass(filteredClasses[0]); else classOpen = true" :aria-expanded="classOpen.toString()" aria-controls="assignment-class-options" aria-autocomplete="list" role="combobox" placeholder="Ketik nama kelas..." class="w-full rounded-lg border-slate-200 py-2.5 pl-3 pr-10 text-sm focus:border-brand-500 focus:ring-brand-500">
+                            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400"><x-icon name="chevron-right" class="size-4 rotate-90" /></span>
+                            <div id="assignment-class-options" x-show="classOpen" x-cloak x-transition role="listbox" aria-label="Daftar kelas" class="absolute z-20 mt-2 max-h-60 w-full overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white py-1 shadow-lift">
+                                <template x-for="schoolClass in filteredClasses" :key="schoolClass.value"><button type="button" role="option" :aria-selected="selectedClass === schoolClass.value" @click="selectClass(schoolClass)" class="block w-full px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-800" :class="selectedClass === schoolClass.value ? 'bg-brand-50 font-semibold text-brand-800' : ''" x-text="schoolClass.label"></button></template>
+                                <p x-show="filteredClasses.length === 0" class="px-3 py-3 text-sm text-slate-500">Kelas tidak ditemukan.</p>
+                            </div>
+                        </div>
+                        @error('kelas')<p class="mt-1.5 text-xs font-medium text-rose-600">{{ $message }}</p>@enderror
+                    </div>
                     <x-form.input name="tahun_ajaran" label="Tahun ajaran" required placeholder="2026/2027" />
                     <div class="xl:col-span-4 flex justify-end"><button class="rounded-lg bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Simpan penugasan</button></div>
                 </form>

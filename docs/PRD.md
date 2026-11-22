@@ -46,11 +46,25 @@ Portal Sekolah adalah aplikasi web berbasis Laravel yang menyediakan website pro
 ### 4.3 Panel Admin
 
 - Autentikasi login dan logout.
-- Dashboard dengan statistik siswa aktif, guru aktif, pendaftar, pendaftar menunggu, konten, galeri, dan tingkat verifikasi.
+- Dashboard admin dengan statistik operasional dan aktivitas terbaru; dashboard ini khusus role admin.
 - Daftar pendaftar terbaru dan konten terbaru.
 - Sidebar responsif yang dapat diciutkan pada desktop.
 - Header dengan tanggal, waktu, dan menu akun.
 - Logo monogram pada bagian atas sidebar tanpa teks tambahan.
+
+### 4.3.1 Dashboard per Role
+
+- Admin membuka dashboard operasional di `/admin`.
+- Staf membuka ringkasan pendaftaran dan data sekolah di `/staf/dashboard`; staf tetap memakai rute modul yang memang diizinkan, tanpa berbagi dashboard admin.
+- Guru, wali, dan siswa masing-masing diarahkan ke dashboard pengajaran, portal wali, dan portal belajar.
+- Dashboard dan navigasi hanya menampilkan pintasan sesuai role; pemisahan dashboard tidak mengubah rute atau alur CRUD modul yang sudah ada.
+
+### 4.3.2 Catatan Siswa dan Jadwal
+
+- Catatan perkembangan siswa disimpan pada model/tabel tersendiri, terpisah dari komentar nilai dan catatan absensi.
+- Guru aktif hanya dapat membuat catatan untuk siswa di kelas penugasannya dan mengelola catatan yang dibuatnya.
+- Draf catatan bersifat privat; catatan terbit dapat dibaca oleh siswa terkait dan wali yang tertaut.
+- Guru dan siswa memiliki halaman jadwal lengkap tersendiri; dashboard hanya menampilkan cuplikan.
 
 ### 4.4 Manajemen Pendaftaran
 
@@ -143,9 +157,13 @@ Portal Sekolah adalah aplikasi web berbasis Laravel yang menyediakan website pro
 - Pendaftar diterima dapat dikonversi menjadi data siswa.
 - Admin dan staf dapat mengelola siswa, guru, berita, galeri, dan profil sekolah.
 - Admin dapat mengelola pengguna.
+- Setiap role diarahkan ke dashboard khusus; staf tidak dapat membuka dashboard admin.
 - Guru tidak dapat membuka panel admin dan hanya dapat mengisi nilai/absensi untuk kelas/mapel penugasannya.
 - Siswa hanya dapat membuka portal untuk profil siswa yang ditautkan ke akunnya.
 - Wali hanya dapat melihat data siswa yang ditautkan ke akunnya.
+- Siswa dan wali hanya dapat membaca catatan siswa yang sudah diterbitkan untuk siswa tertaut.
+- Guru hanya dapat mencatat perkembangan siswa dari kelas penugasannya.
+- Jadwal lengkap guru dan siswa tersedia di halaman fitur tersendiri, dengan cuplikan ringkas pada dashboard.
 - Dashboard menampilkan data yang sesuai dengan database.
 - Pengguna dapat mengubah kata sandi dan mencabut sesi lain.
 - `npm run build` berhasil menghasilkan `public/build/manifest.json`.

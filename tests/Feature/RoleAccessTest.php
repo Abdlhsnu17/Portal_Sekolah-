@@ -20,19 +20,41 @@ class RoleAccessTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_panel_is_available_to_admin_and_staff_but_not_teacher_guardian_or_student(): void
+    public function test_admin_dashboard_is_available_only_to_admin(): void
     {
-        foreach (['admin', 'staf'] as $role) {
-            $this->actingAs(User::factory()->create(['role' => $role]))
-                ->get(route('admin.dashboard'))
-                ->assertOk();
-        }
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('admin.dashboard'))
+            ->assertOk();
 
-        foreach (['guru', 'wali', 'siswa'] as $role) {
+        foreach (['staf', 'guru', 'wali', 'siswa'] as $role) {
             $this->actingAs(User::factory()->create(['role' => $role]))
                 ->get(route('admin.dashboard'))
                 ->assertForbidden();
         }
+    }
+
+    public function test_staff_has_a_separate_dashboard_and_keeps_access_to_allowed_modules(): void
+    {
+        $staff = User::factory()->create(['role' => 'staf']);
+
+        $this->actingAs($staff)
+            ->get(route('staff.dashboard'))
+            ->assertOk()
+            ->assertViewIs('staff.dashboard')
+            ->assertSee('Dashboard Staf');
+
+        $this->get(route('admin.registrations.index'))->assertOk();
+        $this->get(route('admin.students.index'))->assertOk();
+    }
+
+    public function test_staff_login_redirects_to_the_staff_dashboard(): void
+    {
+        $staff = User::factory()->create(['role' => 'staf']);
+
+        $this->post(route('login'), [
+            'email' => $staff->email,
+            'password' => 'password',
+        ])->assertRedirect(route('staff.dashboard'));
     }
 
     public function test_staff_cannot_open_admin_only_academic_modules(): void
@@ -46,6 +68,11 @@ class RoleAccessTest extends TestCase
     {
         [$user, $teacher] = $this->makeTeacher('Guru A');
         [$schoolClass, , $assessment, $student] = $this->makeAssignedAssessment($teacher);
+
+        $this->actingAs($user)
+            ->get(route('teaching.index'))
+            ->assertOk()
+            ->assertViewIs('teaching.index');
 
         $this->actingAs($user)
             ->get(route('teaching.assessments.scores', $assessment))
@@ -116,6 +143,15 @@ class RoleAccessTest extends TestCase
             ->assertViewHas('scores', fn ($scores) => $scores->count() === 1 && $scores->first()->student_id === $student->id);
 
         $this->get(route('admin.dashboard'))->assertForbidden();
+    }
+
+    public function test_guardian_has_a_separate_dashboard(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'wali']))
+            ->get(route('guardian.index'))
+            ->assertOk()
+            ->assertViewIs('guardian.index')
+            ->assertSee('Dashboard Wali');
     }
 
     public function test_admin_can_start_a_student_account_from_an_unlinked_student_record(): void

@@ -23,6 +23,11 @@
 
                 if (ciut) {
                     delete html.dataset.sidebar;
+                } elseif ($pengguna?->role === 'staf') {
+                    $menu = [
+                        ['grup' => 'Beranda', 'rute' => 'staff.dashboard', 'label' => 'Dashboard Staf', 'aktif' => 'staff.dashboard', 'ikon' => 'home'],
+                        ['grup' => 'Penerimaan Siswa', 'rute' => 'admin.registrations.index', 'label' => 'Pendaftaran', 'aktif' => 'admin.registrations.*', 'ikon' => 'clipboard'],
+                    ];
                 } else {
                     html.dataset.sidebar = 'collapsed';
                 }
@@ -44,11 +49,16 @@
 
     if ($pengguna?->isTeacher()) {
         $menu = [
-            ['grup' => 'Akademik', 'rute' => 'teaching.index', 'label' => 'Pengajaran Saya', 'aktif' => 'teaching.*', 'ikon' => 'academic'],
+            ['grup' => 'Akademik', 'rute' => 'teaching.index', 'label' => 'Dashboard Guru', 'aktif' => 'teaching.index', 'ikon' => 'academic'],
+            ['grup' => 'Akademik', 'rute' => 'teaching.schedule', 'label' => 'Jadwal Mengajar', 'aktif' => 'teaching.schedule', 'ikon' => 'clock'],
+            ['grup' => 'Akademik', 'rute' => 'teaching.notes.index', 'label' => 'Catatan Siswa', 'aktif' => 'teaching.notes.*', 'ikon' => 'clipboard'],
+            ['grup' => 'Akademik', 'rute' => 'teaching.assessments.index', 'label' => 'Penilaian Siswa', 'aktif' => 'teaching.assessments.*', 'ikon' => 'clipboard'],
         ];
     } elseif ($pengguna?->isStudent()) {
         $menu = [
-            ['grup' => 'Akademik', 'rute' => 'student.index', 'label' => 'Belajar Saya', 'aktif' => 'student.*', 'ikon' => 'academic'],
+            ['grup' => 'Akademik', 'rute' => 'student.index', 'label' => 'Dashboard Siswa', 'aktif' => 'student.index', 'ikon' => 'academic'],
+            ['grup' => 'Akademik', 'rute' => 'student.schedule', 'label' => 'Jadwal Pelajaran', 'aktif' => 'student.schedule', 'ikon' => 'clock'],
+            ['grup' => 'Akademik', 'rute' => 'student.notes', 'label' => 'Catatan Saya', 'aktif' => 'student.notes', 'ikon' => 'clipboard'],
         ];
     } else {
         $menu = [
@@ -75,6 +85,9 @@
         $menu[] = ['grup' => 'Operasional', 'rute' => 'admin.assets.index', 'label' => 'Inventaris Aset', 'aktif' => 'admin.assets.*', 'ikon' => 'building'];
     } elseif (! $pengguna?->isTeacher() && ! $pengguna?->isStudent()) {
         $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.students.index', 'label' => 'Data Siswa', 'aktif' => 'admin.students.*', 'ikon' => 'users'];
+        if ($pengguna?->role === 'staf') {
+            $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.teachers.index', 'label' => 'Data Guru', 'aktif' => 'admin.teachers.*', 'ikon' => 'academic'];
+        }
     }
 
     $pemilikAkun = auth()->user();
@@ -102,7 +115,12 @@
         }
     }
 
-    $ruteBeranda = $pengguna?->isTeacher() ? 'teaching.index' : ($pengguna?->isStudent() ? 'student.index' : 'admin.dashboard');
+    $ruteBeranda = match ($pengguna?->role) {
+        'guru' => 'teaching.index',
+        'siswa' => 'student.index',
+        'staf' => 'staff.dashboard',
+        default => 'admin.dashboard',
+    };
     $menu[] = ['grup' => 'Administrasi', 'rute' => 'security.index', 'label' => 'Pengaturan', 'aktif' => ['security.*', 'admin.settings.*'], 'ikon' => 'cog'];
 
     // Daftar ini juga menjadi sumber pencarian fitur di header. Karena dibentuk
@@ -360,7 +378,7 @@
         <main id="konten-utama" class="relative flex-1 p-4 sm:p-6 lg:p-8" tabindex="-1">
             @unless (request()->routeIs($ruteBeranda))
                 <nav class="mb-4 flex items-center gap-1.5 text-xs font-medium text-slate-500" aria-label="Breadcrumb">
-                    <a href="{{ route($ruteBeranda) }}" class="transition hover:text-brand-700">{{ $pengguna?->isTeacher() ? 'Pengajaran Saya' : ($pengguna?->isStudent() ? 'Belajar Saya' : 'Dashboard') }}</a>
+                    <a href="{{ route($ruteBeranda) }}" class="transition hover:text-brand-700">{{ match ($pengguna?->role) { 'guru' => 'Dashboard Guru', 'siswa' => 'Dashboard Siswa', 'staf' => 'Dashboard Staf', default => 'Dashboard Admin' } }}</a>
                     <x-icon name="chevron-right" class="size-3.5 text-slate-300" />
                     @php
                         $induk = collect($menu)->first(fn ($item) => request()->routeIs($item['aktif']));

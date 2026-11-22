@@ -150,6 +150,7 @@ class AuthController extends Controller
     private function homeRoute(User $user): string
     {
         return match ($user->role) {
+            'staf' => route('staff.dashboard'),
             'wali' => route('guardian.index'),
             'guru' => route('teaching.index'),
             'siswa' => route('student.index'),

@@ -8,6 +8,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int|null $user_id
+ * @property string $nis
+ * @property string|null $nisn
+ * @property string $nama
+ * @property string|null $email
+ * @property string $jenis_kelamin
+ * @property string|null $kelas
+ * @property string|null $jurusan
+ * @property string $status
+ */
 class Student extends Model
 {
     /**
@@ -58,6 +70,11 @@ class Student extends Model
     public function enrollments(): HasMany
     {
         return $this->hasMany(StudentEnrollment::class);
+    }
+
+    public function notes(): HasMany
+    {
+        return $this->hasMany(StudentNote::class);
     }
 
     public function guardians(): BelongsToMany

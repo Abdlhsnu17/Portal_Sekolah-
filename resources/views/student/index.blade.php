@@ -1,12 +1,18 @@
 @extends('layouts.admin')
 
-@section('title', 'Belajar Saya')
+@section('title', 'Dashboard Siswa')
 
 @section('content')
-    <div class="mb-5 rounded-2xl border border-brand-100 bg-white p-5 shadow-card">
-        <p class="text-sm text-slate-500">Siswa</p>
-        <h2 class="mt-1 text-xl font-bold text-brand-950">{{ $student->nama }}</h2>
-        <p class="mt-1 text-sm text-slate-600">NIS {{ $student->nis }}</p>
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-brand-100 bg-white p-5 shadow-card">
+        <div>
+            <p class="text-sm text-slate-500">Siswa</p>
+            <h2 class="mt-1 text-xl font-bold text-brand-950">{{ $student->nama }}</h2>
+            <p class="mt-1 text-sm text-slate-600">NIS {{ $student->nis }}</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('student.schedule') }}" class="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50">Jadwal lengkap</a>
+            <a href="{{ route('student.notes') }}" class="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50">Catatan saya</a>
+        </div>
     </div>
 
     <div class="grid gap-5 xl:grid-cols-2">
@@ -22,7 +28,7 @@
         </section>
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
-            <div class="border-b border-slate-100 p-5"><h2 class="font-bold text-brand-950">Jadwal pelajaran</h2></div>
+            <div class="flex items-center justify-between gap-3 border-b border-slate-100 p-5"><h2 class="font-bold text-brand-950">Cuplikan jadwal pelajaran</h2><a href="{{ route('student.schedule') }}" class="text-sm font-semibold text-brand-700 hover:text-brand-900">Lihat semua</a></div>
             <div class="divide-y divide-slate-100">
                 @forelse($schedules as $schedule)
                     <div class="flex items-center justify-between gap-4 px-5 py-3">
@@ -45,6 +51,22 @@
                     </div>
                 @empty
                     <div class="p-5"><x-empty-state icon="academic" title="Belum ada nilai" description="Nilai akan ditampilkan setelah guru mengisinya." /></div>
+                @endforelse
+            </div>
+        </section>
+
+        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+            <div class="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
+                <h2 class="font-bold text-brand-950">Catatan terbaru</h2>
+                <a href="{{ route('student.notes') }}" class="text-sm font-semibold text-brand-700 hover:text-brand-900">Semua catatan</a>
+            </div>
+            <div class="p-5">
+                @forelse($notes as $note)
+                    <p class="font-semibold text-brand-950">{{ $note->title }}</p>
+                    <p class="mt-1 text-sm text-slate-600">{{ \Illuminate\Support\Str::limit($note->content, 140) }}</p>
+                    <p class="mt-2 text-xs text-slate-500">{{ $note->published_at->format('d M Y') }}</p>
+                @empty
+                    <p class="text-sm text-slate-500">Belum ada catatan yang diterbitkan.</p>
                 @endforelse
             </div>
         </section>

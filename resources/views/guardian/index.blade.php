@@ -1,5 +1,55 @@
 @extends('layouts.public')
-@section('title','Portal Wali')
+
+@section('title', 'Dashboard Wali')
+
 @section('content')
-<section class="mx-auto max-w-6xl px-6 py-12"><div class="mb-8 flex items-center justify-between"><div><p class="text-sm font-semibold text-brand-700">Portal Wali</p><h1 class="mt-1 text-3xl font-bold text-brand-950">Informasi siswa</h1></div><form method="POST" action="{{route('logout')}}">@csrf<button class="rounded-lg border px-4 py-2 text-sm font-semibold">Keluar</button></form></div><div class="space-y-5">@forelse($data as $item)<article class="rounded-2xl border bg-white p-6 shadow-card"><h2 class="text-xl font-bold text-brand-950">{{$item['student']->nama}}</h2><p class="mt-1 text-sm text-slate-500">NIS {{$item['student']->nis}} · {{$item['student']->enrollments->last()?->schoolClass?->name ?? 'Kelas belum ditetapkan'}}</p><div class="mt-5 grid gap-5 md:grid-cols-3"><div><h3 class="font-bold">Absensi</h3><p class="mt-2 text-sm text-slate-600">Hadir {{$item['attendance']['hadir']??0}} · Sakit {{$item['attendance']['sakit']??0}} · Izin {{$item['attendance']['izin']??0}} · Alpa {{$item['attendance']['alpa']??0}}</p></div><div><h3 class="font-bold">Nilai rata-rata</h3><ul class="mt-2 text-sm text-slate-600">@forelse($item['scores'] as $mapel=>$nilai)<li>{{$mapel}}: <b>{{$nilai}}</b></li>@empty<li>Belum ada nilai.</li>@endforelse</ul></div><div><h3 class="font-bold">Tagihan</h3><ul class="mt-2 text-sm text-slate-600">@forelse($item['invoices'] as $invoice)<li>{{$invoice->title}}: Rp {{number_format(max(0,(float)$invoice->amount-(float)($invoice->payments_sum_amount??0)),0,',','.')}}</li>@empty<li>Tidak ada tagihan.</li>@endforelse</ul></div></div></article>@empty<div class="rounded-2xl border bg-white p-8 text-slate-500">Akun wali belum ditautkan dengan siswa. Hubungi sekolah.</div>@endforelse</div></section>
+    <section class="mx-auto max-w-6xl px-6 py-12">
+        <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <p class="text-sm font-semibold text-brand-700">Dashboard Wali</p>
+                <h1 class="mt-1 text-3xl font-bold text-brand-950">Informasi siswa</h1>
+            </div>
+            <div class="flex gap-2">
+                <a href="{{ route('guardian.notes') }}" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50">Catatan siswa</a>
+                <form method="POST" action="{{ route('logout') }}">@csrf<button class="rounded-lg border px-4 py-2 text-sm font-semibold">Keluar</button></form>
+            </div>
+        </div>
+        <div class="space-y-5">
+            @forelse($data as $item)
+                <article class="rounded-2xl border bg-white p-6 shadow-card">
+                    <h2 class="text-xl font-bold text-brand-950">{{ $item['student']->nama }}</h2>
+                    <p class="mt-1 text-sm text-slate-500">NIS {{ $item['student']->nis }} · {{ $item['student']->enrollments->last()?->schoolClass?->name ?? 'Kelas belum ditetapkan' }}</p>
+                    <div class="mt-5 grid gap-5 md:grid-cols-4">
+                        <div>
+                            <h3 class="font-bold">Absensi</h3>
+                            <p class="mt-2 text-sm text-slate-600">Hadir {{ $item['attendance']['hadir'] ?? 0 }} · Sakit {{ $item['attendance']['sakit'] ?? 0 }} · Izin {{ $item['attendance']['izin'] ?? 0 }} · Alpa {{ $item['attendance']['alpa'] ?? 0 }}</p>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">Nilai rata-rata</h3>
+                            <ul class="mt-2 text-sm text-slate-600">
+                                @forelse($item['scores'] as $mapel => $nilai)<li>{{ $mapel }}: <b>{{ $nilai }}</b></li>@empty<li>Belum ada nilai.</li>@endforelse
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">Tagihan</h3>
+                            <ul class="mt-2 text-sm text-slate-600">
+                                @forelse($item['invoices'] as $invoice)<li>{{ $invoice->title }}: Rp {{ number_format(max(0, (float) $invoice->amount - (float) ($invoice->payments_sum_amount ?? 0)), 0, ',', '.') }}</li>@empty<li>Tidak ada tagihan.</li>@endforelse
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">Catatan terbaru</h3>
+                            @forelse($item['notes'] as $note)
+                                <p class="mt-2 text-sm font-semibold text-brand-800">{{ $note->title }}</p>
+                                <p class="mt-1 text-sm text-slate-600">{{ \Illuminate\Support\Str::limit($note->content, 100) }}</p>
+                            @empty
+                                <p class="mt-2 text-sm text-slate-500">Belum ada catatan terbit.</p>
+                            @endforelse
+                        </div>
+                    </div>
+                </article>
+            @empty
+                <div class="rounded-2xl border bg-white p-8 text-slate-500">Akun wali belum ditautkan dengan siswa. Hubungi sekolah.</div>
+            @endforelse
+        </div>
+    </section>
 @endsection

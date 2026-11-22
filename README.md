@@ -143,7 +143,16 @@ Dengan MFA aktif, administrator wajib mengaktifkan MFA sebelum dapat membuka pan
 | Cek status | `/pendaftaran/cek-status` | Pengecekan status pendaftaran |
 | Autentikasi | `/login` | Login, MFA, dan logout |
 | Keamanan akun | `/keamanan` | Kata sandi, MFA, sesi, dan audit keamanan |
-| Dashboard admin | `/admin` | Ringkasan statistik dan aktivitas |
+| Dashboard admin | `/admin` | Ringkasan operasional khusus admin |
+| Dashboard staf | `/staf/dashboard` | Pendaftaran dan ringkasan data yang tersedia untuk staf |
+| Dashboard guru | `/pengajaran-saya` | Penugasan, jadwal, penilaian, dan absensi kelas |
+| Dashboard wali | `/portal-wali` | Ringkasan siswa tertaut, absensi, nilai, dan tagihan |
+| Dashboard siswa | `/portal-siswa` | Kelas, jadwal, nilai, agenda belajar, dan absensi |
+| Jadwal guru | `/pengajaran-saya/jadwal` | Jadwal lengkap kelas dan mata pelajaran guru |
+| Jadwal siswa | `/portal-siswa/jadwal` | Jadwal lengkap untuk kelas aktif siswa |
+| Catatan siswa | `/pengajaran-saya/catatan-siswa` | Guru membuat catatan mandiri; draf privat, catatan terbit tampil ke siswa dan wali tertaut |
+| Catatan saya | `/portal-siswa/catatan` | Siswa membaca catatan yang diterbitkan guru |
+| Catatan siswa wali | `/portal-wali/catatan` | Wali membaca catatan terbit untuk siswa yang tertaut |
 | Pendaftaran admin | `/admin/pendaftaran` | Verifikasi dan konversi pendaftar |
 | Siswa | `/admin/students` | CRUD data siswa |
 | Guru | `/admin/teachers` | CRUD data guru |

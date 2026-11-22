@@ -8,6 +8,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\StaffDashboardController;
 use App\Http\Controllers\StudentPortalController;
 use App\Http\Controllers\TeachingController;
 use Illuminate\Support\Facades\Route;
@@ -66,6 +67,8 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 Route::get('/portal-wali', [GuardianPortalController::class, 'index'])->middleware(['auth', 'aktif'])->name('guardian.index');
 Route::get('/portal-siswa', [StudentPortalController::class, 'index'])->middleware(['auth', 'aktif', 'mfa'])->name('student.index');
+Route::get('/staf/dashboard', [StaffDashboardController::class, 'index'])
+    ->middleware(['auth', 'aktif', 'mfa', 'internal'])->name('staff.dashboard');
 
 Route::prefix('pemberitahuan')->name('notifications.')->middleware(['auth', 'aktif'])->group(function () {
     Route::post('/baca-semua', [NotificationController::class, 'readAll'])->name('read-all');
@@ -97,11 +100,23 @@ Route::get('/pengajaran-saya', [TeachingController::class, 'index'])
     ->middleware(['auth', 'aktif', 'mfa'])->name('teaching.index');
 
 Route::prefix('pengajaran-saya')->name('teaching.')->middleware(['auth', 'aktif', 'mfa'])->group(function () {
+    Route::get('/jadwal', [TeachingController::class, 'schedule'])->name('schedule');
+    Route::get('/catatan-siswa', [TeachingController::class, 'notes'])->name('notes.index');
+    Route::post('/catatan-siswa', [TeachingController::class, 'storeNote'])->name('notes.store');
+    Route::put('/catatan-siswa/{studentNote}', [TeachingController::class, 'updateNote'])->name('notes.update');
+    Route::delete('/catatan-siswa/{studentNote}', [TeachingController::class, 'destroyNote'])->name('notes.destroy');
+    Route::get('/penilaian', [TeachingController::class, 'assessments'])->name('assessments.index');
     Route::get('/absensi-siswa', [TeachingController::class, 'attendance'])->name('attendance');
     Route::post('/absensi-siswa', [TeachingController::class, 'storeAttendance'])->name('attendance.store');
     Route::get('/penilaian/{assessment}/nilai', [TeachingController::class, 'scores'])->name('assessments.scores');
     Route::put('/penilaian/{assessment}/nilai', [TeachingController::class, 'storeScores'])->name('assessments.scores.store');
 });
+Route::get('/portal-siswa/jadwal', [StudentPortalController::class, 'schedule'])
+    ->middleware(['auth', 'aktif', 'mfa'])->name('student.schedule');
+Route::get('/portal-siswa/catatan', [StudentPortalController::class, 'notes'])
+    ->middleware(['auth', 'aktif', 'mfa'])->name('student.notes');
+Route::get('/portal-wali/catatan', [GuardianPortalController::class, 'notes'])
+    ->middleware(['auth', 'aktif'])->name('guardian.notes');
 
 /*
 |--------------------------------------------------------------------------
@@ -110,7 +125,7 @@ Route::prefix('pengajaran-saya')->name('teaching.')->middleware(['auth', 'aktif'
 */
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa', 'internal'])->group(function () {
-    Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [Admin\DashboardController::class, 'index'])->middleware('admin')->name('dashboard');
 
     // Pendaftaran
     Route::get('/pendaftaran', [Admin\RegistrationController::class, 'index'])->name('registrations.index');

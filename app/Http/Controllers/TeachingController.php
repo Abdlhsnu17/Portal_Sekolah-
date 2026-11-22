@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Assessment;
 use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\StudentAttendance;
+use App\Models\StudentNote;
 use App\Models\StudentScore;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
@@ -16,17 +18,119 @@ class TeachingController extends Controller
     public function index(Request $request)
     {
         $teacher = $this->teacherFor($request);
+        $assignments = $teacher->teachingAssignments()->with('subject')
+            ->orderByDesc('tahun_ajaran')->orderBy('kelas')->get();
+        $schedules = $teacher->classSchedules()->with(['schoolClass.academicYear', 'subject'])
+            ->orderBy('day_of_week')->orderBy('starts_at')->get();
+        $students = $this->studentsForTeacher($teacher);
 
         return view('teaching.index', [
             'teacher' => $teacher,
-            'assignments' => $teacher->teachingAssignments()->with('subject')
-                ->orderByDesc('tahun_ajaran')->orderBy('kelas')->get(),
-            'schedules' => $teacher->classSchedules()->with(['schoolClass.academicYear', 'subject'])
-                ->orderBy('day_of_week')->orderBy('starts_at')->get(),
-            'recentAssessments' => $teacher->assessments()->with(['schoolClass', 'subject'])->withCount('scores')
-                ->latest('assessment_date')->limit(6)->get(),
+            'assignments' => $assignments,
+            'schedules' => $schedules->take(3),
             'homeroomClasses' => $teacher->homeroomClasses()->with(['academicYear'])->withCount('enrollments')->get(),
+            'statistics' => [
+                'classes' => $assignments->map(fn ($assignment) => $assignment->tahun_ajaran.'|'.$assignment->kelas)->unique()->count(),
+                'subjects' => $assignments->pluck('subject_id')->unique()->count(),
+                'students' => $students->count(),
+                'schedules' => $schedules->count(),
+            ],
         ]);
+    }
+
+    public function schedule(Request $request)
+    {
+        $teacher = $this->teacherFor($request);
+        $schedules = $teacher->classSchedules()
+            ->with(['schoolClass.academicYear', 'subject'])
+            ->orderBy('day_of_week')
+            ->orderBy('starts_at')
+            ->get();
+
+        return view('teaching.schedule', compact('schedules'));
+    }
+
+    public function notes(Request $request)
+    {
+        $teacher = $this->teacherFor($request);
+        $notes = $teacher->studentNotes()
+            ->where('created_by', $request->user()->id)
+            ->with('student')
+            ->latest()
+            ->get();
+        $editingNote = $request->filled('edit')
+            ? $notes->firstWhere('id', $request->integer('edit'))
+            : null;
+
+        abort_if($request->filled('edit') && ! $editingNote, 404);
+
+        return view('teaching.notes', [
+            'students' => $this->studentsForTeacher($teacher),
+            'notes' => $notes,
+            'editingNote' => $editingNote,
+        ]);
+    }
+
+    public function storeNote(Request $request)
+    {
+        $teacher = $this->teacherFor($request);
+        $data = $request->validate([
+            'student_id' => ['required', 'integer', 'exists:students,id'],
+            'title' => ['required', 'string', 'max:150'],
+            'content' => ['required', 'string', 'max:5000'],
+            'publish' => ['nullable', 'boolean'],
+        ]);
+        $students = $this->studentsForTeacher($teacher);
+        abort_unless($students->contains('id', (int) $data['student_id']), 403, 'Siswa tersebut bukan bagian dari kelas penugasan Anda.');
+
+        StudentNote::create([
+            'student_id' => $data['student_id'],
+            'teacher_id' => $teacher->id,
+            'created_by' => $request->user()->id,
+            'title' => $data['title'],
+            'content' => $data['content'],
+            'published_at' => $request->boolean('publish') ? now() : null,
+        ]);
+
+        return redirect()->route('teaching.notes.index')->with('success', 'Catatan siswa berhasil disimpan.');
+    }
+
+    public function updateNote(Request $request, StudentNote $studentNote)
+    {
+        $teacher = $this->teacherFor($request);
+        abort_unless(
+            (int) $studentNote->teacher_id === $teacher->id
+                && (int) $studentNote->created_by === $request->user()->id,
+            404,
+        );
+
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:150'],
+            'content' => ['required', 'string', 'max:5000'],
+            'publish' => ['nullable', 'boolean'],
+        ]);
+
+        $studentNote->update([
+            'title' => $data['title'],
+            'content' => $data['content'],
+            'published_at' => $request->boolean('publish') ? ($studentNote->published_at ?? now()) : null,
+        ]);
+
+        return redirect()->route('teaching.notes.index')->with('success', 'Catatan siswa berhasil diperbarui.');
+    }
+
+    public function destroyNote(Request $request, StudentNote $studentNote)
+    {
+        $teacher = $this->teacherFor($request);
+        abort_unless(
+            (int) $studentNote->teacher_id === $teacher->id
+                && (int) $studentNote->created_by === $request->user()->id,
+            404,
+        );
+
+        $studentNote->delete();
+
+        return redirect()->route('teaching.notes.index')->with('success', 'Catatan siswa berhasil dihapus.');
     }
 
     public function scores(Request $request, Assessment $assessment)
@@ -43,6 +147,36 @@ class TeachingController extends Controller
         $scores = $assessment->scores()->get()->keyBy('student_id');
 
         return view('teaching.scores', compact('assessment', 'students', 'scores'));
+    }
+
+    public function assessments(Request $request)
+    {
+        $teacher = $this->teacherFor($request);
+        $assessments = $teacher->assessments()
+            ->with(['schoolClass.academicYear', 'subject'])
+            ->withCount('scores')
+            ->latest('assessment_date')
+            ->get();
+
+        $assessmentGroups = [
+            'harian' => [
+                'title' => 'Penilaian Harian',
+                'description' => 'Tugas dan kuis pembelajaran.',
+                'assessments' => $assessments->whereIn('type', ['tugas', 'kuis']),
+            ],
+            'tengah_semester' => [
+                'title' => 'Tengah Semester',
+                'description' => 'Penilaian Tengah Semester (PTS).',
+                'assessments' => $assessments->where('type', 'pts'),
+            ],
+            'akhir_dan_praktik' => [
+                'title' => 'Akhir & Praktik',
+                'description' => 'PAS dan penilaian praktik.',
+                'assessments' => $assessments->whereIn('type', ['pas', 'praktik']),
+            ],
+        ];
+
+        return view('teaching.assessments', compact('assessmentGroups'));
     }
 
     public function storeScores(Request $request, Assessment $assessment)
@@ -167,5 +301,28 @@ class TeachingController extends Controller
             ->where('tahun_ajaran', $schoolClass->academicYear->name)
             ->when($subjectId, fn ($query) => $query->where('subject_id', $subjectId))
             ->exists();
+    }
+
+    private function studentsForTeacher(Teacher $teacher)
+    {
+        $assignments = $teacher->teachingAssignments()->get(['kelas', 'tahun_ajaran']);
+        if ($assignments->isEmpty()) {
+            return collect();
+        }
+
+        $classIds = SchoolClass::query()
+            ->where(function ($query) use ($assignments) {
+                foreach ($assignments as $assignment) {
+                    $query->orWhere(fn ($query) => $query
+                        ->where('name', $assignment->kelas)
+                        ->whereHas('academicYear', fn ($year) => $year->where('name', $assignment->tahun_ajaran)));
+                }
+            })
+            ->pluck('id');
+
+        return Student::query()
+            ->whereHas('enrollments', fn ($query) => $query->where('status', 'aktif')->whereIn('school_class_id', $classIds))
+            ->orderBy('nama')
+            ->get();
     }
 }

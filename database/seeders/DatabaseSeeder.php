@@ -3,13 +3,18 @@
 namespace Database\Seeders;
 
 use App\Models\Announcement;
+use App\Models\AcademicYear;
+use App\Models\Assessment;
 use App\Models\Gallery;
 use App\Models\Registration;
 use App\Models\SchoolProfile;
+use App\Models\SchoolClass;
 use App\Models\StaffMember;
 use App\Models\Student;
+use App\Models\StudentEnrollment;
 use App\Models\Subject;
 use App\Models\Teacher;
+use App\Models\TeachingAssignment;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +28,7 @@ class DatabaseSeeder extends Seeder
         $this->pengguna();
         $this->guru();
         $this->siswa();
+        $this->demoPengajaran();
         $this->konten();
         $this->galeri();
         $this->pendaftaran();
@@ -165,6 +171,70 @@ class DatabaseSeeder extends Seeder
                     'telepon_wali' => '0813'.rand(10000000, 99999999),
                     'status' => 'aktif',
                 ]
+            );
+        }
+    }
+
+    /**
+     * Data akademik minimum agar alur guru dapat langsung didemokan.
+     *
+     * Guru Ahmad Fauzi menerima penugasan Bahasa Inggris di kelas X-1,
+     * lalu komponen penilaian tersedia pada halaman Pengajaran Saya.
+     */
+    protected function demoPengajaran(): void
+    {
+        $tahunMulai = now()->year;
+        $tahunAjaran = $tahunMulai.'/'.($tahunMulai + 1);
+
+        $year = AcademicYear::updateOrCreate(
+            ['name' => $tahunAjaran],
+            [
+                'starts_on' => "{$tahunMulai}-07-01",
+                'ends_on' => ($tahunMulai + 1).'-06-30',
+                'is_active' => true,
+            ],
+        );
+        AcademicYear::whereKeyNot($year->id)->where('is_active', true)->update(['is_active' => false]);
+
+        $teacher = Teacher::where('nama', 'Ahmad Fauzi, S.Pd.')->firstOrFail();
+        $subject = Subject::where('nama', 'Bahasa Inggris')->firstOrFail();
+        $class = SchoolClass::updateOrCreate(
+            ['academic_year_id' => $year->id, 'name' => 'X-1'],
+            [
+                'grade_level' => 'X',
+                'major' => 'Umum',
+                'homeroom_teacher_id' => $teacher->id,
+                'capacity' => 36,
+            ],
+        );
+
+        TeachingAssignment::firstOrCreate([
+            'teacher_id' => $teacher->id,
+            'subject_id' => $subject->id,
+            'kelas' => $class->name,
+            'tahun_ajaran' => $year->name,
+        ]);
+
+        Student::where('kelas', $class->name)->where('status', 'aktif')->orderBy('id')->limit(10)->get()
+            ->each(fn (Student $student) => StudentEnrollment::firstOrCreate(
+                ['student_id' => $student->id, 'school_class_id' => $class->id],
+                ['status' => 'aktif', 'enrolled_on' => $year->starts_on],
+            ));
+
+        foreach ([
+            ['Kuis Vocabulary Unit 1', 'kuis', now()->subDays(7)->toDateString()],
+            ['Tugas Writing: My School', 'tugas', now()->subDays(3)->toDateString()],
+            ['Penilaian Tengah Semester Bahasa Inggris', 'pts', now()->subDay()->toDateString()],
+            ['Praktik Speaking: Introducing Myself', 'praktik', now()->toDateString()],
+        ] as [$title, $type, $date]) {
+            Assessment::firstOrCreate(
+                ['school_class_id' => $class->id, 'subject_id' => $subject->id, 'title' => $title],
+                [
+                    'teacher_id' => $teacher->id,
+                    'type' => $type,
+                    'maximum_score' => 100,
+                    'assessment_date' => $date,
+                ],
             );
         }
     }
