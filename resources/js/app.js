@@ -2,6 +2,59 @@ import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
 
+/**
+ * Pencari navigasi global. Item yang dikirim dari Blade sudah disaring di
+ * server berdasarkan role pengguna; JavaScript hanya memfilter daftar itu
+ * untuk kenyamanan, bukan sebagai lapisan otorisasi.
+ */
+window.featureSearch = (features = []) => ({
+    open: false,
+    query: '',
+    features,
+    get results() {
+        const term = this.normalize(this.query);
+        const matched = term
+            ? this.features.filter((item) => this.normalize(`${item.label} ${item.grup}`).includes(term))
+            : this.features;
+
+        return matched.slice(0, 8);
+    },
+    normalize(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLocaleLowerCase('id-ID')
+            .trim();
+    },
+    openSearch() {
+        this.open = true;
+        this.$nextTick(() => {
+            const input = this.$refs.input?.offsetParent ? this.$refs.input : this.$refs.mobileInput;
+            input?.focus();
+        });
+    },
+    close() {
+        this.open = false;
+        this.query = '';
+    },
+    goToFirstResult() {
+        const first = this.results[0];
+        if (first) window.location.assign(first.url);
+    },
+    init() {
+        window.addEventListener('keydown', (event) => {
+            const target = event.target;
+            const typing = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable;
+            const shortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+
+            if (shortcut || (event.key === '/' && !typing)) {
+                event.preventDefault();
+                this.openSearch();
+            }
+        });
+    },
+});
+
 Alpine.data('toastCenter', (initialToasts = []) => ({
     toasts: [],
     nextId: 1,
@@ -56,6 +109,23 @@ document.addEventListener('click', (event) => {
 });
 
 Alpine.start();
+
+// Standarkan aksi baris tabel lama yang masih ditulis sebagai teks.
+// Label tetap tersedia melalui title dan aria-label agar dapat diakses pembaca layar.
+document.querySelectorAll('a, button').forEach((control) => {
+    const label = control.textContent.trim();
+    if (!['Ubah', 'Hapus'].includes(label)) return;
+
+    const isDelete = label === 'Hapus';
+    control.setAttribute('aria-label', label);
+    control.setAttribute('title', label);
+    control.className = `inline-flex size-9 items-center justify-center rounded-lg transition focus-visible:outline-none focus-visible:ring-2 ${isDelete
+        ? 'text-rose-600 hover:bg-rose-50 hover:text-rose-800 focus-visible:ring-rose-500'
+        : 'text-brand-700 hover:bg-brand-50 hover:text-brand-900 focus-visible:ring-brand-500'}`;
+    control.innerHTML = isDelete
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-5" aria-hidden="true"><path d="M3 6h18M9 6V4h6v2m-7 0 1 14h6l1-14M10 10v6m4-6v6" /></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-5" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>';
+});
 
 /**
  * Menu admin adalah area gulir terpisah dari konten. Simpan posisinya agar
@@ -174,9 +244,14 @@ document.querySelectorAll('[data-smart-table]').forEach((table) => {
         const escapeCsv = (value) => `"${value.replace(/\s+/g, ' ').trim().replace(/"/g, '""')}"`;
         const rows = [visibleIndexes.map(({ header }) => escapeCsv(header.textContent.replace(/[↑↓↕]/g, '')))];
 
+        const cellValue = (cell) => {
+            const field = cell?.querySelector('input:not([type="hidden"]), textarea, select');
+            return field ? field.value : (cell?.innerText || '');
+        };
+
         table.querySelectorAll('tbody tr').forEach((row) => {
             if (row.children.length !== headers.length) return;
-            rows.push(visibleIndexes.map(({ index }) => escapeCsv(row.children[index]?.innerText || '')));
+            rows.push(visibleIndexes.map(({ index }) => escapeCsv(cellValue(row.children[index]))));
         });
 
         const blob = new Blob([`\uFEFF${rows.map((row) => row.join(',')).join('\n')}`], { type: 'text/csv;charset=utf-8' });

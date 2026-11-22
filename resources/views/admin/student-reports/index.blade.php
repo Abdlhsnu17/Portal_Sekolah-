@@ -64,6 +64,10 @@
                     Tampilkan rekap
                 </button>
             </form>
+            <div class="mt-4 border-t border-slate-100 pt-4 text-sm text-slate-600">
+                Nilai diinput melalui menu <a href="{{ route('admin.assessments.index') }}" class="font-semibold text-brand-700 hover:text-brand-900">Akademik → Penilaian</a>.
+                Buat komponen penilaian, lalu pilih <strong>Nilai</strong> untuk mengisi nilai seluruh siswa dalam rombel.
+            </div>
         </section>
 
         @if ($student)
@@ -79,7 +83,7 @@
                     <div>
                         <h3 class="mb-3 font-bold text-brand-950">Nilai per mata pelajaran</h3>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
+                            <table data-smart-table data-smart-table-include-last-column data-table-name="rekap-nilai" class="w-full text-sm">
                                 <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500">
                                     <tr>
                                         <th class="px-4 py-3">Mata pelajaran</th>

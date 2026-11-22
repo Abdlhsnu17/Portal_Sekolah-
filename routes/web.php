@@ -164,7 +164,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa', 'int
     Route::get('laporan/nilai', [Admin\ReportExportController::class, 'scores'])->middleware('admin')->name('reports.scores');
     Route::get('keuangan', [Admin\FinanceController::class, 'index'])->middleware('admin')->name('finance.index');
     Route::post('keuangan/tagihan', [Admin\FinanceController::class, 'storeInvoice'])->middleware('admin')->name('finance.invoices.store');
+    Route::get('keuangan/tagihan/{invoice}/edit', [Admin\FinanceController::class, 'editInvoice'])->middleware('admin')->name('finance.invoices.edit');
+    Route::put('keuangan/tagihan/{invoice}', [Admin\FinanceController::class, 'updateInvoice'])->middleware('admin')->name('finance.invoices.update');
+    Route::delete('keuangan/tagihan/{invoice}', [Admin\FinanceController::class, 'destroyInvoice'])->middleware('admin')->name('finance.invoices.destroy');
     Route::post('keuangan/tagihan/{invoice}/pembayaran', [Admin\FinanceController::class, 'storePayment'])->middleware('admin')->name('finance.payments.store');
+    Route::get('keuangan/tagihan/{invoice}/pembayaran', [Admin\FinanceController::class, 'createPayment'])->middleware('admin')->name('finance.payments.create');
+    Route::get('keuangan/tagihan/{invoice}/pembayaran/{payment}/edit', [Admin\FinanceController::class, 'editPayment'])->middleware('admin')->name('finance.payments.edit');
+    Route::put('keuangan/tagihan/{invoice}/pembayaran/{payment}', [Admin\FinanceController::class, 'updatePayment'])->middleware('admin')->name('finance.payments.update');
+    Route::delete('keuangan/tagihan/{invoice}/pembayaran/{payment}', [Admin\FinanceController::class, 'destroyPayment'])->middleware('admin')->name('finance.payments.destroy');
     Route::get('perpustakaan', [Admin\LibraryController::class, 'index'])->middleware('admin')->name('library.index');
     Route::post('perpustakaan/buku', [Admin\LibraryController::class, 'storeBook'])->middleware('admin')->name('library.books.store');
     Route::post('perpustakaan/peminjaman', [Admin\LibraryController::class, 'storeLoan'])->middleware('admin')->name('library.loans.store');

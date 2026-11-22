@@ -263,6 +263,30 @@
         color: rgb(100 116 139);
     }
 
+    /* Formulir di kolom pertama tetap tersedia ketika daftar di kanan digulir.
+       Kelas dipasang eksplisit agar grid biasa tidak ikut berubah. */
+    @media (min-width: 1024px) {
+        .admin-workspace-lg > :first-child,
+        .admin-shell .grid.gap-5[class*="lg:grid-cols-3"] > :first-child {
+            position: sticky;
+            top: 7rem;
+            align-self: start;
+            max-height: calc(100dvh - 8rem);
+            overflow-y: auto;
+        }
+    }
+
+    @media (min-width: 1280px) {
+        .admin-workspace-xl > :first-child,
+        .admin-shell .grid.gap-5[class*="xl:grid-cols-3"] > :first-child {
+            position: sticky;
+            top: 7rem;
+            align-self: start;
+            max-height: calc(100dvh - 8rem);
+            overflow-y: auto;
+        }
+    }
+
     /* Label kecil huruf kapital — penanda bagian yang konsisten di seluruh situs */
     .eyebrow {
         font-family: var(--font-display);

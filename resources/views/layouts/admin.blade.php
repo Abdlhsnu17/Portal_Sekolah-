@@ -104,6 +104,18 @@
 
     $ruteBeranda = $pengguna?->isTeacher() ? 'teaching.index' : ($pengguna?->isStudent() ? 'student.index' : 'admin.dashboard');
     $menu[] = ['grup' => 'Administrasi', 'rute' => 'security.index', 'label' => 'Pengaturan', 'aktif' => ['security.*', 'admin.settings.*'], 'ikon' => 'cog'];
+
+    // Daftar ini juga menjadi sumber pencarian fitur di header. Karena dibentuk
+    // dari menu setelah semua pemeriksaan role di atas, hasilnya tidak pernah
+    // membocorkan maupun memberi tautan ke fitur yang tidak boleh diakses user.
+    $fiturPencarian = collect($menu)
+        ->map(fn ($item) => [
+            'label' => $item['label'],
+            'grup' => $item['grup'],
+            'url' => route($item['rute']),
+        ])
+        ->unique('url')
+        ->values();
 @endphp
 
 <div class="admin-layout flex overflow-hidden">
@@ -175,6 +187,59 @@
             </div>
 
             <div class="flex items-center gap-3">
+                {{-- Pencarian hanya menerima daftar fitur yang telah difilter oleh role di atas. --}}
+                <div x-data="featureSearch({{ \Illuminate\Support\Js::from($fiturPencarian) }})"
+                     @keydown.escape.window="close()"
+                     class="relative">
+                    <label class="sr-only" for="pencarian-fitur">Cari fitur</label>
+                    <div class="relative hidden w-72 lg:block xl:w-96">
+                        <x-icon name="search" class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                        <input id="pencarian-fitur" x-ref="input" x-model="query"
+                               @focus="open = true" @keydown.enter.prevent="goToFirstResult()"
+                               type="search" autocomplete="off" placeholder="Cari fitur..."
+                               aria-label="Cari fitur yang dapat Anda akses"
+                               :aria-expanded="open.toString()" aria-controls="hasil-pencarian-fitur"
+                               class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-14 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100/70" />
+                        <kbd class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">⌘K</kbd>
+                    </div>
+
+                    <button type="button" @click="openSearch()" aria-label="Cari fitur"
+                            class="grid size-9 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-brand-200 hover:text-brand-700 lg:hidden">
+                        <x-icon name="search" class="size-5" />
+                    </button>
+
+                    <div id="hasil-pencarian-fitur" x-show="open" x-cloak @click.outside="close()" x-transition.opacity
+                         style="display: none;" role="listbox"
+                         class="absolute right-0 z-40 mt-2 w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-lift lg:w-full">
+                        <div class="relative mb-1 lg:hidden">
+                            <x-icon name="search" class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                            <input x-ref="mobileInput" x-model="query" @keydown.enter.prevent="goToFirstResult()"
+                                   type="search" autocomplete="off" placeholder="Cari fitur..."
+                                   class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-800 outline-none focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100/70" />
+                        </div>
+                        <template x-if="results.length">
+                            <div>
+                                <p class="px-2.5 pb-1.5 pt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400"
+                                   x-text="query ? 'Hasil pencarian' : 'Fitur yang dapat diakses'"></p>
+                                <template x-for="item in results" :key="item.url">
+                                    <a :href="item.url" role="option"
+                                       class="flex items-center justify-between gap-3 rounded-lg px-2.5 py-2.5 text-sm transition hover:bg-brand-50 focus:bg-brand-50 focus:outline-none">
+                                        <span class="min-w-0">
+                                            <span class="block truncate font-semibold text-slate-800" x-text="item.label"></span>
+                                            <span class="block truncate text-xs text-slate-500" x-text="item.grup"></span>
+                                        </span>
+                                        <x-icon name="chevron-right" class="size-4 shrink-0 text-slate-300" />
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+                        <div x-show="!results.length" class="px-3 py-5 text-center">
+                            <p class="text-sm font-semibold text-slate-700">Fitur tidak ditemukan</p>
+                            <p class="mt-1 text-xs text-slate-500">Coba kata kunci lain.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <x-date-time-card compact />
 
                 <div x-data="{ open: false }" @keydown.escape.window="open = false" class="relative shrink-0">
@@ -210,7 +275,7 @@
                                           data-delete-description="Seluruh pemberitahuan akan dihapus permanen dan tidak dapat dikembalikan.">
                                     @csrf
                                     @method('DELETE')
-                                        <button type="submit" class="text-xs font-semibold text-rose-600 hover:text-rose-800">Hapus semua</button>
+                                        <button type="submit" aria-label="Hapus semua pemberitahuan" title="Hapus semua" class="inline-flex size-8 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"><x-icon name="trash" class="size-4" /></button>
                                     </form>
                                 @endif
                             </div>

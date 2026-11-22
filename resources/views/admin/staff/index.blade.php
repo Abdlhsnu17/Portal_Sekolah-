@@ -30,7 +30,11 @@
             <button class="rounded-lg bg-brand-950 px-4 py-2 text-sm font-semibold text-white">Cari</button>
         </form>
         @if (request('type') === 'teacher' && auth()->user()->isAdmin())
-            <form method="POST" action="{{ route('admin.staff.teacher-accounts') }}" onsubmit="return confirm('Buat akun untuk semua guru tanpa akun yang memiliki email valid dan belum digunakan? Kata sandi sementara hanya akan ditampilkan sekali.')">
+            <form method="POST" action="{{ route('admin.staff.teacher-accounts') }}"
+                  data-confirm-action
+                  data-confirm-title="Buat akun untuk semua guru?"
+                  data-confirm-description="Akun akan dibuat untuk guru tanpa akun yang memiliki email valid dan belum digunakan. Kata sandi sementara hanya akan ditampilkan sekali."
+                  data-confirm-button="Buat akun">
                 @csrf
                 <button class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Buat akun semua guru tanpa akun</button>
             </form>

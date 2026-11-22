@@ -3,7 +3,7 @@
 @section('title', 'Profil Sekolah')
 
 @section('content')
-    <form method="POST" action="{{ route('admin.profile.update') }}" class="max-w-5xl space-y-6" x-data="{ tab: 'identitas' }">
+    <form method="POST" action="{{ route('admin.profile.update') }}" class="max-w-5xl space-y-6" x-data="{ tabs: ['identitas', 'kontak', 'profil'], tab: ['identitas', 'kontak', 'profil'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'identitas', select(value) { this.tab = value; history.replaceState(null, '', `#${value}`); } }" @hashchange.window="tab = tabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : tab">
         @csrf @method('PUT')
 
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
@@ -20,7 +20,7 @@
                         ['id' => 'profil', 'label' => 'Profil', 'desc' => 'Visi, misi, sejarah'],
                     ] as $tab)
                         <button type="button"
-                                @click="tab = '{{ $tab['id'] }}'"
+                                @click="select('{{ $tab['id'] }}')"
                                 :class="tab === '{{ $tab['id'] }}' ? 'border-brand-200 bg-white text-brand-950 shadow-card' : 'border-transparent text-slate-600 hover:bg-white/70 hover:text-brand-900'"
                                 class="min-w-40 rounded-lg border px-4 py-3 text-left transition lg:min-w-0">
                             <span class="block text-sm font-bold">{{ $tab['label'] }}</span>

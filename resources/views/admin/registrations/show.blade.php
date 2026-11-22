@@ -104,8 +104,8 @@
 
                 <form method="POST" action="{{ route('admin.registrations.destroy', $item) }}" class="mt-5 border-t border-slate-100 pt-5" data-confirm-delete>
                     @csrf @method('DELETE')
-                    <button class="w-full rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:bg-rose-50">
-                        Hapus Pendaftaran
+                    <button aria-label="Hapus pendaftaran" title="Hapus" class="inline-flex size-9 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+                        <x-icon name="trash" class="size-5" />
                     </button>
                 </form>
             </div>
