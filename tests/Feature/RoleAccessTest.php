@@ -14,6 +14,7 @@ use App\Models\TeachingAssignment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class RoleAccessTest extends TestCase
@@ -187,6 +188,39 @@ class RoleAccessTest extends TestCase
         $account = User::where('email', 'siswa.baru@example.test')->firstOrFail();
         $this->assertSame('siswa', $account->role);
         $this->assertSame($account->id, $student->fresh()->user_id);
+    }
+
+    public function test_admin_can_reset_the_password_for_every_account_role_from_user_management(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        foreach (User::ROLES as $role) {
+            $account = User::factory()->create(['role' => $role, 'password' => 'OldPassword123!']);
+
+            $this->actingAs($admin)
+                ->get(route('admin.users.password.edit', $account))
+                ->assertOk()
+                ->assertSee('Ganti kata sandi');
+
+            $this->put(route('admin.users.password.update', $account), [
+                'password' => 'NewPassword123!',
+                'password_confirmation' => 'NewPassword123!',
+            ])->assertRedirect(route('admin.users.index'));
+
+            $this->assertTrue(Hash::check('NewPassword123!', $account->fresh()->password));
+            $this->assertNotNull($account->fresh()->password_changed_at);
+        }
+    }
+
+    public function test_non_admin_cannot_reset_a_user_password(): void
+    {
+        $account = User::factory()->create(['role' => 'siswa']);
+
+        $this->actingAs(User::factory()->create(['role' => 'guru']))
+            ->put(route('admin.users.password.update', $account), [
+                'password' => 'NewPassword123!',
+                'password_confirmation' => 'NewPassword123!',
+            ])->assertForbidden();
     }
 
     private function makeTeacher(string $name): array

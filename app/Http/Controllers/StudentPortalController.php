@@ -19,6 +19,7 @@ class StudentPortalController extends Controller
             ->with('schoolClass.academicYear')
             ->get();
         $classIds = $enrollments->pluck('school_class_id');
+        $studentKey = $student->getKey();
 
         return view('student.index', [
             'student' => $student,
@@ -27,11 +28,11 @@ class StudentPortalController extends Controller
                 ->with(['schoolClass.academicYear', 'subject', 'teacher'])
                 ->orderBy('day_of_week')->orderBy('starts_at')->limit(3)->get(),
             'assessments' => Assessment::whereIn('school_class_id', $classIds)
-                ->with(['schoolClass', 'subject', 'scores' => fn ($query) => $query->where('student_id', $student->id)])
+                ->with(['schoolClass', 'subject', 'scores' => fn ($query) => $query->where('student_id', $studentKey)])
                 ->latest('assessment_date')->limit(20)->get(),
-            'attendances' => StudentAttendance::where('student_id', $student->id)
+            'attendances' => StudentAttendance::where('student_id', $studentKey)
                 ->with('schoolClass')->latest('attendance_date')->limit(20)->get(),
-            'scores' => StudentScore::where('student_id', $student->id)
+            'scores' => StudentScore::where('student_id', $studentKey)
                 ->whereNotNull('score')
                 ->with('assessment.subject', 'assessment.schoolClass')
                 ->latest()->limit(30)->get(),

@@ -138,6 +138,42 @@ class UserController extends Controller
         ]);
     }
 
+    public function editPassword(User $user)
+    {
+        return view('admin.users.password', compact('user'));
+    }
+
+    public function updatePassword(Request $request, User $user)
+    {
+        $data = $request->validate([
+            'password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()->uncompromised()],
+        ]);
+
+        $user->forceFill([
+            'password' => $data['password'],
+            'password_changed_at' => now(),
+            'remember_token' => Str::random(60),
+        ])->save();
+
+        if (config('session.driver') === 'database') {
+            DB::table(config('session.table', 'sessions'))->where('user_id', $user->id)->delete();
+        }
+
+        SecurityAudit::record('user.password_reset', $request->user(), $request, [
+            'target_user_id' => $user->id,
+            'sessions_revoked' => true,
+        ]);
+
+        if (! app()->environment('testing')) {
+            $user->notify(new SecurityEventNotification(
+                'Administrator mereset kata sandi akun Anda. Silakan masuk kembali menggunakan kata sandi baru.',
+                (string) $request->ip(),
+            ));
+        }
+
+        return redirect()->route('admin.users.index')->with('success', "Kata sandi {$user->name} berhasil diperbarui. Semua sesi akun tersebut telah dikeluarkan.");
+    }
+
     public function update(Request $request, User $user)
     {
         $data = $request->validate([

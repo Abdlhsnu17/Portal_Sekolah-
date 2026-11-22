@@ -49,7 +49,7 @@
                     </button>
                 </div>
                 <p class="mt-1 text-xs text-slate-500">
-                    Minimal 8 karakter.{{ $item->exists ? ' Kosongkan bila tidak ingin mengubah kata sandi.' : '' }}
+                    Minimal 12 karakter dengan huruf besar, huruf kecil, angka, dan simbol.{{ $item->exists ? ' Kosongkan bila tidak ingin mengubah kata sandi.' : '' }}
                 </p>
                 @error('password')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
             </div>

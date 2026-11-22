@@ -231,6 +231,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa', 'int
     Route::put('/pengaturan', [Admin\SettingController::class, 'update'])->name('settings.update')->middleware('admin');
 
     // Manajemen pengguna (khusus admin)
+    Route::get('users/{user}/password', [Admin\UserController::class, 'editPassword'])->middleware('admin')->name('users.password.edit');
+    Route::put('users/{user}/password', [Admin\UserController::class, 'updatePassword'])->middleware('admin')->name('users.password.update');
     Route::resource('users', Admin\UserController::class)->except('show')->middleware('admin');
     Route::get('wali', [Admin\GuardianController::class, 'index'])->middleware('admin')->name('guardians.index');
     Route::post('wali/{guardian}/siswa', [Admin\GuardianController::class, 'link'])->middleware('admin')->name('guardians.link');

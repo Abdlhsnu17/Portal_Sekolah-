@@ -69,6 +69,9 @@
                             </td>
                             <td class="sticky right-0 bg-white px-4 py-3 group-hover:bg-slate-50">
                                 <div class="flex items-center justify-end gap-2">
+                                    <a href="{{ route('admin.users.password.edit', $item) }}" aria-label="Ganti kata sandi {{ $item->name }}" title="Ganti kata sandi" class="inline-flex size-9 items-center justify-center rounded-lg text-amber-700 transition hover:bg-amber-50 hover:text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+                                        <x-icon name="key" class="size-5" />
+                                    </a>
                                     <a href="{{ route('admin.users.edit', $item) }}" aria-label="Ubah pengguna {{ $item->name }}" title="Ubah" class="inline-flex size-9 items-center justify-center rounded-lg text-brand-700 transition hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
                                         <x-icon name="pencil" class="size-5" />
                                     </a>

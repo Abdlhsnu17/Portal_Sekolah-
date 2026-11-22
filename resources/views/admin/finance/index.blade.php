@@ -35,7 +35,7 @@
         </div>
         <div class="mt-5">
         <section id="finance-create-panel" x-show="activeSection === 'create'" x-cloak x-transition.opacity class="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card" role="tabpanel">
-            <div class="border-b border-slate-100 bg-gradient-to-r from-brand-50 to-white px-5 py-4 sm:px-6">
+            <div class="border-b border-slate-100 bg-linear-to-r from-brand-50 to-white px-5 py-4 sm:px-6">
                 <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Keuangan siswa</p>
                 <h2 class="mt-1 text-xl font-bold text-brand-950">Buat tagihan baru</h2>
                 <p class="mt-0.5 text-sm text-slate-500">Tentukan siswa, kategori, dan rincian pembayaran.</p>

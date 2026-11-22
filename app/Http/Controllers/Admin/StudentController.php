@@ -28,8 +28,7 @@ class StudentController extends Controller
 
     public function create()
     {
-        $student = new Student;
-        $student->fill(['status' => 'aktif', 'jenis_kelamin' => 'L']);
+        $student = Student::make(['status' => 'aktif', 'jenis_kelamin' => 'L']);
 
         return view('admin.students.form', ['item' => $student]);
     }
