@@ -14,15 +14,18 @@
             <x-form.input name="email" label="Email" type="email" required :value="$item->email" />
             <x-form.input name="telepon" label="Telepon" :value="$item->telepon" />
             <x-form.select name="role" label="Peran" required :value="$item->role"
-                           :options="['admin' => 'Administrator', 'staf' => 'Staf', 'guru' => 'Guru']" />
+                           :options="['admin' => 'Administrator', 'staf' => 'Staf', 'guru' => 'Guru', 'wali' => 'Wali/Orang Tua', 'siswa' => 'Siswa']" />
             <x-form.select name="teacher_id" label="Data Guru Terkait"
                            :value="$item->teacher?->id ?? $selectedTeacherId" :options="$teachers"
                            placeholder="Tidak ditautkan" />
             <x-form.select name="staff_member_id" label="Data Staf Terkait"
                            :value="$item->staffMember?->id ?? $selectedStaffId" :options="$staffMembers"
                            placeholder="Tidak ditautkan" />
+            <x-form.select name="student_id" label="Data Siswa Terkait"
+                           :value="$item->student?->id ?? $selectedStudentId" :options="$students"
+                           placeholder="Tidak ditautkan" />
             <p class="-mt-3 text-xs leading-relaxed text-slate-500 sm:col-span-2">
-                Pilih paling banyak satu identitas guru atau staf. Peran di atas tetap hanya mengatur hak akses.
+                Akun siswa wajib ditautkan ke satu data siswa. Satu data siswa hanya dapat memiliki satu akun.
             </p>
 
             <div class="flex items-end pb-2">

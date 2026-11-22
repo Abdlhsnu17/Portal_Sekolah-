@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 class NotificationController extends Controller
 {
@@ -13,9 +13,10 @@ class NotificationController extends Controller
         $item = $request->user()->notifications()->findOrFail($notification);
         $item->markAsRead();
 
-        $url = (string) ($item->data['url'] ?? route('admin.dashboard'));
+        $fallback = $this->homeRoute($request->user());
+        $url = (string) ($item->data['url'] ?? $fallback);
 
-        return redirect()->to(str_starts_with($url, url('/')) ? $url : route('admin.dashboard'));
+        return redirect()->to(str_starts_with($url, url('/')) ? $url : $fallback);
     }
 
     public function readAll(Request $request): RedirectResponse
@@ -43,5 +44,15 @@ class NotificationController extends Controller
         $request->user()->notifications()->delete();
 
         return back()->with('success', 'Semua pemberitahuan berhasil dihapus.');
+    }
+
+    private function homeRoute(User $user): string
+    {
+        return match ($user->role) {
+            'wali' => route('guardian.index'),
+            'guru' => route('teaching.index'),
+            'siswa' => route('student.index'),
+            default => route('admin.dashboard'),
+        };
     }
 }

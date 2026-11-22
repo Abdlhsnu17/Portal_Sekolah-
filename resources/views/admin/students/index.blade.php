@@ -45,6 +45,9 @@
                             <td class="px-4 py-3">
                                 <p class="font-semibold text-brand-950">{{ $item->nama }}</p>
                                 <p class="text-xs text-slate-500">{{ $item->email ?: 'Tanpa email' }}</p>
+                                @if ($item->user)
+                                    <p class="text-xs font-medium text-emerald-700">Akun belajar: {{ $item->user->email }}</p>
+                                @endif
                             </td>
                             <td class="px-4 py-3 text-slate-600">{{ $item->kelas ?: '—' }}</td>
                             <td class="hidden px-4 py-3 text-slate-600 xl:table-cell">{{ $item->jurusan ?: '—' }}</td>
@@ -56,6 +59,9 @@
                             </td>
                             <td class="sticky right-0 bg-white px-4 py-3 group-hover:bg-slate-50">
                                 <div class="flex items-center justify-end gap-2">
+                                    @if (auth()->user()->isAdmin() && $item->status === 'aktif' && ! $item->user)
+                                        <a href="{{ route('admin.users.create', ['student_id' => $item->id]) }}" class="rounded-lg px-2 py-1 text-xs font-semibold text-brand-700 hover:bg-brand-50">Buat akun</a>
+                                    @endif
                                     <a href="{{ route('admin.students.edit', $item) }}" aria-label="Ubah data siswa {{ $item->nama }}" title="Ubah" class="inline-flex size-9 items-center justify-center rounded-lg text-brand-700 transition hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
                                         <x-icon name="pencil" class="size-5" />
                                     </a>

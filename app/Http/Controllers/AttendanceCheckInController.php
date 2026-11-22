@@ -326,10 +326,12 @@ class AttendanceCheckInController extends Controller
     private function personFor(Request $request): array
     {
         $user = $request->user()->loadMissing(['teacher', 'staffMember']);
-        if ($user->teacher && $user->teacher->status === 'aktif') {
+        if (in_array($user->role, ['admin', 'guru'], true)
+            && $user->teacher && $user->teacher->status === 'aktif') {
             return ['teacher', $user->teacher];
         }
-        if ($user->staffMember && $user->staffMember->status === 'aktif') {
+        if (in_array($user->role, ['admin', 'staf'], true)
+            && $user->staffMember && $user->staffMember->status === 'aktif') {
             return ['staff', $user->staffMember];
         }
 

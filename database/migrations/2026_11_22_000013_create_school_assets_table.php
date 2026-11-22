@@ -1,0 +1,3 @@
+<?php
+use Illuminate\Database\Migrations\Migration; use Illuminate\Database\Schema\Blueprint; use Illuminate\Support\Facades\Schema;
+return new class extends Migration { public function up():void { Schema::create('school_assets',function(Blueprint $t){$t->id();$t->string('code',50)->unique();$t->string('name',150);$t->string('category',100)->nullable();$t->string('location',100)->nullable();$t->unsignedInteger('quantity')->default(1);$t->string('condition',20)->default('baik');$t->string('status',20)->default('tersedia');$t->date('acquired_on')->nullable();$t->decimal('acquisition_value',14,2)->nullable();$t->text('note')->nullable();$t->timestamps();$t->index(['category','status']);}); } public function down():void {Schema::dropIfExists('school_assets');} };

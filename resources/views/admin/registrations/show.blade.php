@@ -53,8 +53,14 @@
                                 <p class="text-sm font-semibold text-brand-950">{{ $doc->jenis }}</p>
                                 <p class="mt-0.5 truncate text-xs text-slate-500">{{ $doc->nama_file }} &middot; {{ $doc->ukuran_label }}</p>
                             </div>
-                            <a href="{{ route('admin.registrations.dokumen', [$item, $doc->id]) }}"
-                               class="shrink-0 text-sm font-semibold text-brand-700 hover:text-brand-900">Unduh</a>
+                            <div class="flex shrink-0 gap-3">
+                                @if (in_array(strtolower(pathinfo($doc->nama_file, PATHINFO_EXTENSION)), ['pdf', 'jpg', 'jpeg', 'png'], true))
+                                    <a href="{{ route('admin.registrations.dokumen.preview', [$item, $doc->id]) }}" target="_blank" rel="noopener"
+                                       class="text-sm font-semibold text-slate-600 hover:text-brand-900">Pratinjau</a>
+                                @endif
+                                <a href="{{ route('admin.registrations.dokumen', [$item, $doc->id]) }}"
+                                   class="text-sm font-semibold text-brand-700 hover:text-brand-900">Unduh</a>
+                            </div>
                         </li>
                     @empty
                         <li class="px-5 py-10 text-center text-sm text-slate-500">Pendaftar belum mengunggah dokumen.</li>

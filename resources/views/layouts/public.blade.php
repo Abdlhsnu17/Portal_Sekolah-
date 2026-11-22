@@ -23,8 +23,13 @@
         ['rute' => 'galeri', 'label' => 'Galeri', 'aktif' => 'galeri'],
         ['rute' => 'pendaftaran.status', 'label' => 'Cek Status', 'aktif' => 'pendaftaran.status'],
     ];
-    $rutePetugas = auth()->check() ? 'admin.dashboard' : 'login';
-    $labelPetugas = auth()->check() ? 'Panel Petugas' : 'Login Petugas';
+    $pengguna = auth()->user();
+    $rutePetugas = $pengguna
+        ? ($pengguna->isGuardian() ? 'guardian.index' : ($pengguna->isTeacher() ? 'teaching.index' : ($pengguna->isStudent() ? 'student.index' : 'admin.dashboard')))
+        : 'login';
+    $labelPetugas = $pengguna
+        ? ($pengguna->isGuardian() ? 'Portal Wali' : ($pengguna->isTeacher() ? 'Pengajaran Saya' : ($pengguna->isStudent() ? 'Belajar Saya' : 'Panel Petugas')))
+        : 'Login Petugas';
 @endphp
 
 {{-- Bar utilitas: kontak ringkas, memberi kesan situs resmi --}}

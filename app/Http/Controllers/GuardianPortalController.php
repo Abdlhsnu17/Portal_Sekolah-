@@ -1,0 +1,4 @@
+<?php
+namespace App\Http\Controllers;
+use App\Models\StudentAttendance; use App\Models\StudentInvoice; use App\Models\StudentScore; use Illuminate\Http\Request;
+class GuardianPortalController extends Controller { public function index(Request $r){abort_unless($r->user()->isGuardian(),403);$students=$r->user()->students()->with('enrollments.schoolClass')->get();$data=$students->map(function($s){return ['student'=>$s,'attendance'=>StudentAttendance::where('student_id',$s->id)->selectRaw('status,count(*) total')->groupBy('status')->pluck('total','status'),'invoices'=>StudentInvoice::where('student_id',$s->id)->withSum('payments','amount')->latest()->get(),'scores'=>StudentScore::where('student_id',$s->id)->with('assessment.subject')->get()->groupBy(fn($v)=>$v->assessment->subject->nama)->map(fn($v)=>round($v->avg('score'),2))];});return view('guardian.index',compact('data'));} }

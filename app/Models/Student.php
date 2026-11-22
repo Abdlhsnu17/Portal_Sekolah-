@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Student extends Model
 {
@@ -30,7 +33,7 @@ class Student extends Model
     }
 
     protected $fillable = [
-        'nis', 'nisn', 'nama', 'email', 'jenis_kelamin', 'kelas', 'jurusan',
+        'user_id', 'nis', 'nisn', 'nama', 'email', 'jenis_kelamin', 'kelas', 'jurusan',
         'tanggal_lahir', 'alamat', 'nama_wali', 'telepon_wali', 'status',
     ];
 
@@ -50,5 +53,20 @@ class Student extends Model
     public function getJenisKelaminLabelAttribute(): string
     {
         return $this->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan';
+    }
+
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(StudentEnrollment::class);
+    }
+
+    public function guardians(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'guardian_student')->withTimestamps();
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -6,8 +6,9 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -18,7 +19,7 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    public const ROLES = ['admin', 'staf', 'guru'];
+    public const ROLES = ['admin', 'staf', 'guru', 'wali', 'siswa'];
 
     protected function casts(): array
     {
@@ -46,9 +47,34 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    public function isTeacher(): bool
+    {
+        return $this->role === 'guru';
+    }
+
+    public function isGuardian(): bool
+    {
+        return $this->role === 'wali';
+    }
+
+    public function isStudent(): bool
+    {
+        return $this->role === 'siswa';
+    }
+
+    public function students(): BelongsToMany
+    {
+        return $this->belongsToMany(Student::class, 'guardian_student')->withTimestamps();
+    }
+
     public function teacher(): HasOne
     {
         return $this->hasOne(Teacher::class);
+    }
+
+    public function student(): HasOne
+    {
+        return $this->hasOne(Student::class);
     }
 
     public function staffMember(): HasOne

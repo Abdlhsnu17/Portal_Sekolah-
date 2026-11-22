@@ -58,6 +58,32 @@ document.addEventListener('click', (event) => {
 Alpine.start();
 
 /**
+ * Menu admin adalah area gulir terpisah dari konten. Simpan posisinya agar
+ * ketika sebuah tautan dipilih dan halaman dirender ulang, menu tetap berada
+ * pada item yang baru dipilih alih-alih kembali melompat ke bagian lain.
+ */
+document.querySelectorAll('[data-sidebar-navigation]').forEach((navigation) => {
+    const storageKey = 'admin-sidebar-scroll-position';
+
+    try {
+        const savedPosition = Number(sessionStorage.getItem(storageKey));
+        if (Number.isFinite(savedPosition) && savedPosition > 0) {
+            navigation.scrollTop = savedPosition;
+        }
+    } catch (_) { /* Penyimpanan sesi browser tidak tersedia. */ }
+
+    navigation.addEventListener('scroll', () => {
+        try { sessionStorage.setItem(storageKey, String(navigation.scrollTop)); } catch (_) { /* abaikan */ }
+    }, { passive: true });
+
+    navigation.addEventListener('click', (event) => {
+        if (!event.target.closest('a[href]')) return;
+
+        try { sessionStorage.setItem(storageKey, String(navigation.scrollTop)); } catch (_) { /* abaikan */ }
+    });
+});
+
+/**
  * Progressive enhancement untuk tabel admin. Tabel tetap berfungsi penuh tanpa
  * JavaScript; kontrol berikut hanya menambah ekspor, kepadatan, dan visibilitas
  * kolom pada halaman yang sedang ditampilkan.
@@ -65,6 +91,7 @@ Alpine.start();
 document.querySelectorAll('[data-smart-table]').forEach((table) => {
     const tableName = table.dataset.tableName || 'data';
     const headers = [...table.querySelectorAll('thead th')];
+    const includesLastColumn = table.dataset.smartTableIncludeLastColumn !== undefined;
     const storageKey = `smart-table:${tableName}`;
 
     let preferences = { compact: false, hidden: [] };
@@ -116,7 +143,7 @@ document.querySelectorAll('[data-smart-table]').forEach((table) => {
 
     const columnTabs = toolbar.querySelector('.smart-table-column-tabs');
     headers.forEach((header, index) => {
-        if (header.dataset.noColumnToggle !== undefined || index === headers.length - 1) return;
+        if (header.dataset.noColumnToggle !== undefined || (!includesLastColumn && index === headers.length - 1)) return;
 
         const label = header.textContent.replace(/[↑↓↕]/g, '').trim();
         const button = document.createElement('button');
@@ -143,7 +170,7 @@ document.querySelectorAll('[data-smart-table]').forEach((table) => {
     toolbar.querySelector('[data-export]').addEventListener('click', () => {
         const visibleIndexes = headers
             .map((header, index) => ({ header, index }))
-            .filter(({ header, index }) => index !== headers.length - 1 && !header.classList.contains('smart-column-hidden'));
+            .filter(({ header, index }) => (includesLastColumn || index !== headers.length - 1) && !header.classList.contains('smart-column-hidden'));
         const escapeCsv = (value) => `"${value.replace(/\s+/g, ' ').trim().replace(/"/g, '""')}"`;
         const rows = [visibleIndexes.map(({ header }) => escapeCsv(header.textContent.replace(/[↑↓↕]/g, '')))];
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\StaffMember;
+use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Notifications\SecurityEventNotification;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -23,7 +25,7 @@ class UserController extends Controller
         $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
 
         return view('admin.users.index', [
-            'items' => User::with(['teacher', 'staffMember'])->search($request->input('q'))->orderBy($sort, $direction)->paginate(10)->withQueryString(),
+            'items' => User::with(['teacher', 'staffMember', 'student'])->search($request->input('q'))->orderBy($sort, $direction)->paginate(10)->withQueryString(),
         ]);
     }
 
@@ -31,6 +33,11 @@ class UserController extends Controller
     {
         $selectedTeacherId = $request->integer('teacher_id') ?: null;
         $selectedStaffId = $selectedTeacherId ? null : ($request->integer('staff_member_id') ?: null);
+        $selectedStudentId = $request->integer('student_id') ?: null;
+        if ($selectedStudentId) {
+            $selectedTeacherId = null;
+            $selectedStaffId = null;
+        }
         $selectedTeacher = $selectedTeacherId
             ? Teacher::whereKey($selectedTeacherId)->whereNull('user_id')->first()
             : null;
@@ -44,19 +51,27 @@ class UserController extends Controller
         if ($selectedStaffId && ! $selectedStaff) {
             $selectedStaffId = null;
         }
+        $selectedStudent = $selectedStudentId
+            ? Student::whereKey($selectedStudentId)->whereNull('user_id')->where('status', 'aktif')->first()
+            : null;
+        if ($selectedStudentId && ! $selectedStudent) {
+            $selectedStudentId = null;
+        }
 
         return view('admin.users.form', [
             'item' => new User([
-                'name' => $selectedTeacher?->nama ?? $selectedStaff?->nama,
-                'email' => $selectedTeacher?->email ?? $selectedStaff?->email,
+                'name' => $selectedStudent?->nama ?? $selectedTeacher?->nama ?? $selectedStaff?->nama,
+                'email' => $selectedStudent?->email ?? $selectedTeacher?->email ?? $selectedStaff?->email,
                 'telepon' => $selectedTeacher?->telepon ?? $selectedStaff?->telepon,
-                'role' => $selectedTeacherId ? 'guru' : 'staf',
+                'role' => $selectedStudentId ? 'siswa' : ($selectedTeacherId ? 'guru' : 'staf'),
                 'is_active' => true,
             ]),
             'teachers' => $this->teacherOptions(),
             'selectedTeacherId' => $selectedTeacherId,
             'staffMembers' => $this->staffOptions(),
             'selectedStaffId' => $selectedStaffId,
+            'students' => $this->studentOptions(),
+            'selectedStudentId' => $selectedStudentId,
         ]);
     }
 
@@ -67,23 +82,40 @@ class UserController extends Controller
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')],
             'role' => ['required', Rule::in(User::ROLES)],
             'telepon' => ['nullable', 'string', 'max:30'],
-            'teacher_id' => ['nullable', 'integer', Rule::prohibitedIf($request->filled('staff_member_id')), 'exists:teachers,id', Rule::unique('teachers', 'id')->whereNotNull('user_id')],
-            'staff_member_id' => ['nullable', 'integer', Rule::prohibitedIf($request->filled('teacher_id')), 'exists:staff_members,id', Rule::unique('staff_members', 'id')->whereNotNull('user_id')],
+            'teacher_id' => [
+                Rule::requiredIf($request->input('role') === 'guru'),
+                'nullable', 'integer', Rule::prohibitedIf(in_array($request->input('role'), ['staf', 'wali', 'siswa'], true) || $request->filled('staff_member_id') || $request->filled('student_id')),
+                'exists:teachers,id', Rule::unique('teachers', 'id')->whereNotNull('user_id'),
+            ],
+            'staff_member_id' => [
+                'nullable', 'integer', Rule::prohibitedIf($request->filled('teacher_id') || $request->filled('student_id') || in_array($request->input('role'), ['guru', 'wali', 'siswa'], true)),
+                'exists:staff_members,id', Rule::unique('staff_members', 'id')->whereNotNull('user_id'),
+            ],
+            'student_id' => [
+                Rule::requiredIf($request->input('role') === 'siswa'),
+                'nullable', 'integer', Rule::prohibitedIf($request->input('role') !== 'siswa' || $request->filled('teacher_id') || $request->filled('staff_member_id')),
+                Rule::exists('students', 'id')->where('status', 'aktif'),
+                Rule::unique('students', 'id')->whereNotNull('user_id'),
+            ],
             'password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()->uncompromised()],
         ]);
 
         $teacherId = $data['teacher_id'] ?? null;
         $staffId = $data['staff_member_id'] ?? null;
-        unset($data['teacher_id'], $data['staff_member_id']);
+        $studentId = $data['student_id'] ?? null;
+        unset($data['teacher_id'], $data['staff_member_id'], $data['student_id']);
         $data['is_active'] = $request->boolean('is_active');
 
-        $user = DB::transaction(function () use ($data, $teacherId, $staffId) {
+        $user = DB::transaction(function () use ($data, $teacherId, $staffId, $studentId) {
             $user = User::create($data);
             if ($teacherId) {
                 Teacher::findOrFail($teacherId)->update(['user_id' => $user->id]);
             }
             if ($staffId) {
                 StaffMember::findOrFail($staffId)->update(['user_id' => $user->id]);
+            }
+            if ($studentId) {
+                $this->linkStudent($studentId, $user);
             }
 
             return $user;
@@ -96,11 +128,13 @@ class UserController extends Controller
     public function edit(User $user)
     {
         return view('admin.users.form', [
-            'item' => $user->load(['teacher', 'staffMember']),
+            'item' => $user->load(['teacher', 'staffMember', 'student']),
             'teachers' => $this->teacherOptions($user),
             'selectedTeacherId' => null,
             'staffMembers' => $this->staffOptions($user),
             'selectedStaffId' => null,
+            'students' => $this->studentOptions($user),
+            'selectedStudentId' => null,
         ]);
     }
 
@@ -112,19 +146,27 @@ class UserController extends Controller
             'role' => ['required', Rule::in(User::ROLES)],
             'telepon' => ['nullable', 'string', 'max:30'],
             'teacher_id' => [
-                'nullable', 'integer', Rule::prohibitedIf($request->filled('staff_member_id')), 'exists:teachers,id',
+                Rule::requiredIf($request->input('role') === 'guru'),
+                'nullable', 'integer', Rule::prohibitedIf(in_array($request->input('role'), ['staf', 'wali', 'siswa'], true) || $request->filled('staff_member_id') || $request->filled('student_id')), 'exists:teachers,id',
                 Rule::unique('teachers', 'id')->whereNotNull('user_id')->ignore($user->teacher?->id),
             ],
             'staff_member_id' => [
-                'nullable', 'integer', Rule::prohibitedIf($request->filled('teacher_id')), 'exists:staff_members,id',
+                'nullable', 'integer', Rule::prohibitedIf($request->filled('teacher_id') || $request->filled('student_id') || in_array($request->input('role'), ['guru', 'wali', 'siswa'], true)), 'exists:staff_members,id',
                 Rule::unique('staff_members', 'id')->whereNotNull('user_id')->ignore($user->staffMember?->id),
+            ],
+            'student_id' => [
+                Rule::requiredIf($request->input('role') === 'siswa'),
+                'nullable', 'integer', Rule::prohibitedIf($request->input('role') !== 'siswa' || $request->filled('teacher_id') || $request->filled('staff_member_id')),
+                Rule::exists('students', 'id')->where('status', 'aktif'),
+                Rule::unique('students', 'id')->whereNotNull('user_id')->ignore($user->student?->id),
             ],
             'password' => ['nullable', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()->uncompromised()],
         ]);
 
         $teacherId = $data['teacher_id'] ?? null;
         $staffId = $data['staff_member_id'] ?? null;
-        unset($data['teacher_id'], $data['staff_member_id']);
+        $studentId = $data['student_id'] ?? null;
+        unset($data['teacher_id'], $data['staff_member_id'], $data['student_id']);
         $data['is_active'] = $request->boolean('is_active');
 
         if (blank($data['password'])) {
@@ -138,20 +180,25 @@ class UserController extends Controller
             ]);
         }
 
-        $credentialsChanged = array_key_exists('password', $data) || $data['role'] !== $user->role || ! $data['is_active'];
+        $studentChanged = (int) ($studentId ?? 0) !== (int) ($user->student?->id ?? 0);
+        $credentialsChanged = array_key_exists('password', $data) || $data['role'] !== $user->role || ! $data['is_active'] || $studentChanged;
         if (array_key_exists('password', $data)) {
             $data['password_changed_at'] = now();
             $data['remember_token'] = Str::random(60);
         }
-        DB::transaction(function () use ($user, $data, $teacherId, $staffId) {
+        DB::transaction(function () use ($user, $data, $teacherId, $staffId, $studentId) {
             $user->update($data);
             Teacher::where('user_id', $user->id)->update(['user_id' => null]);
             StaffMember::where('user_id', $user->id)->update(['user_id' => null]);
+            Student::where('user_id', $user->id)->update(['user_id' => null]);
             if ($teacherId) {
                 Teacher::findOrFail($teacherId)->update(['user_id' => $user->id]);
             }
             if ($staffId) {
                 StaffMember::findOrFail($staffId)->update(['user_id' => $user->id]);
+            }
+            if ($studentId) {
+                $this->linkStudent($studentId, $user);
             }
         });
         if ($credentialsChanged && config('session.driver') === 'database') {
@@ -210,5 +257,41 @@ class UserController extends Controller
                 $staff->id => "{$staff->nama} ({$staff->nip})",
             ])
             ->all();
+    }
+
+    private function studentOptions(?User $user = null): array
+    {
+        return Student::query()
+            ->where('status', 'aktif')
+            ->where(function ($query) use ($user) {
+                $query->whereNull('user_id');
+                if ($user) {
+                    $query->orWhere('user_id', $user->id);
+                }
+            })
+            ->orderBy('nama')
+            ->get()
+            ->mapWithKeys(fn (Student $student) => [
+                $student->id => "{$student->nama} ({$student->nis})",
+            ])
+            ->all();
+    }
+
+    private function linkStudent(int $studentId, User $user): void
+    {
+        $student = Student::query()->lockForUpdate()->findOrFail($studentId);
+        if ($student->status !== 'aktif') {
+            throw ValidationException::withMessages([
+                'student_id' => 'Akun hanya dapat ditautkan ke data siswa aktif.',
+            ]);
+        }
+
+        if ($student->user_id && $student->user_id !== $user->id) {
+            throw ValidationException::withMessages([
+                'student_id' => 'Data siswa tersebut sudah ditautkan ke akun lain.',
+            ]);
+        }
+
+        $student->update(['user_id' => $user->id]);
     }
 }

@@ -16,7 +16,7 @@ class StudentController extends Controller
         $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
 
         return view('admin.students.index', [
-            'items' => Student::search($request->input('q'))
+            'items' => Student::with('user')->search($request->input('q'))
                 ->when($request->input('kelas'), fn ($query, $kelas) => $query->where('kelas', $kelas))
                 ->orderBy($sort, $direction)
                 ->paginate(10)
@@ -28,7 +28,10 @@ class StudentController extends Controller
 
     public function create()
     {
-        return view('admin.students.form', ['item' => new Student(['status' => 'aktif', 'jenis_kelamin' => 'L'])]);
+        $student = new Student;
+        $student->fill(['status' => 'aktif', 'jenis_kelamin' => 'L']);
+
+        return view('admin.students.form', ['item' => $student]);
     }
 
     public function store(Request $request)

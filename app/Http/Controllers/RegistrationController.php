@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Registration;
+use App\Models\AdmissionPath;
+use App\Models\AdmissionPeriod;
 use App\Models\SchoolProfile;
+use App\Notifications\RegistrationSubmittedNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -15,11 +19,25 @@ class RegistrationController extends Controller
     /** Sub fitur: Formulir Pendaftaran */
     public function create()
     {
-        return view('public.pendaftaran.form', ['profil' => SchoolProfile::current()]);
+        $period = AdmissionPeriod::where('is_active', true)->first();
+
+        return view('public.pendaftaran.form', [
+            'profil' => SchoolProfile::current(),
+            'admissionPeriod' => $period,
+            'admissionPaths' => AdmissionPath::where('is_active', true)->orderBy('name')->get(),
+        ]);
     }
 
     public function store(Request $request)
     {
+        $period = AdmissionPeriod::where('is_active', true)->first();
+        if ($period && (now()->startOfDay()->lt($period->starts_on) || now()->startOfDay()->gt($period->ends_on))) {
+            return back()->withErrors(['pendaftaran' => 'Pendaftaran belum dibuka atau periode pendaftaran telah berakhir.'])->withInput();
+        }
+        if ($period && $period->quota !== null && Registration::where('admission_period_id', $period->id)->count() >= $period->quota) {
+            return back()->withErrors(['pendaftaran' => 'Kuota pendaftaran untuk periode ini sudah terpenuhi.'])->withInput();
+        }
+
         $data = $request->validate([
             'nama_lengkap' => ['required', 'string', 'max:150'],
             'nisn' => ['nullable', 'string', 'max:30'],
@@ -33,9 +51,20 @@ class RegistrationController extends Controller
             'alamat' => ['required', 'string', 'max:500'],
             'nama_wali' => ['required', 'string', 'max:150'],
             'telepon_wali' => ['required', 'string', 'max:30'],
+            'admission_path_id' => [($period && AdmissionPath::where('is_active', true)->exists()) ? 'required' : 'nullable', Rule::exists('admission_paths', 'id')->where('is_active', true)],
         ]);
 
+        $data['admission_period_id'] = $period?->id;
+
         $registration = Registration::daftarkan($data);
+
+        // Kegagalan layanan email tidak boleh membatalkan pendaftaran yang sudah
+        // tersimpan; nomor pendaftaran tetap ditampilkan pada halaman berikutnya.
+        try {
+            Notification::route('mail', $registration->email)->notify(new RegistrationSubmittedNotification($registration));
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
 
         // Pengisi formulir jelas pemilik data ini, jadi berkasnya langsung terbuka
         // untuknya tanpa perlu mengetik ulang nomor + email.

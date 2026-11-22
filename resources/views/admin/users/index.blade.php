@@ -48,6 +48,8 @@
                                             <p class="truncate text-xs font-medium text-slate-500">NIP {{ $item->teacher->nip }}</p>
                                         @elseif ($item->staffMember)
                                             <p class="truncate text-xs font-medium text-slate-500">NIP {{ $item->staffMember->nip }}</p>
+                                        @elseif ($item->student)
+                                            <p class="truncate text-xs font-medium text-slate-500">NIS {{ $item->student->nis }}</p>
                                         @endif
                                     </div>
                                 </div>

@@ -67,7 +67,7 @@
         </form>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[820px] text-left text-sm">
+            <table data-smart-table data-table-name="absensi-admin" class="w-full min-w-[820px] text-left text-sm">
                 <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <tr>
                         <th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Pegawai</th><th class="px-4 py-3">Jenis</th>

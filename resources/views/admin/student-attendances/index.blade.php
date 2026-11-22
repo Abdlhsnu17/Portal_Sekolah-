@@ -1,0 +1,16 @@
+@extends('layouts.admin')
+
+@section('title', 'Absensi Siswa')
+
+@section('content')
+<div class="space-y-5">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-card"><form method="GET" class="grid gap-4 md:grid-cols-[1fr_13rem_auto] md:items-end"><x-form.select name="school_class_id" label="Rombel" :options="$classes->mapWithKeys(fn($class) => [$class->id => $class->academicYear->name.' — '.$class->name])->all()" :value="$classId" placeholder="Pilih rombel" /><x-form.input name="date" type="date" label="Tanggal" :value="$date" /><button class="rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-800">Tampilkan</button></form></div>
+    @if($schoolClass)
+        <form method="POST" action="{{ route('admin.student-attendances.store') }}" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">@csrf
+            <input type="hidden" name="school_class_id" value="{{ $schoolClass->id }}"><input type="hidden" name="attendance_date" value="{{ $date }}">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-5"><div><h2 class="text-lg font-bold text-brand-950">{{ $schoolClass->name }}</h2><p class="mt-1 text-sm text-slate-500">{{ \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y') }} · {{ $schoolClass->academicYear->name }}</p></div><button class="rounded-lg bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Simpan absensi</button></div>
+            <div class="overflow-x-auto"><table class="w-full min-w-[720px] text-left text-sm"><thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500"><tr><th class="px-5 py-3">Siswa</th><th class="px-5 py-3">Status</th><th class="px-5 py-3">Keterangan</th></tr></thead><tbody class="divide-y divide-slate-100">@forelse($schoolClass->enrollments->where('status', 'aktif')->sortBy(fn($enrollment) => $enrollment->student->nama) as $enrollment) @php($saved = $attendances->get($enrollment->student_id))<tr><td class="px-5 py-3"><p class="font-semibold text-brand-950">{{ $enrollment->student->nama }}</p><p class="text-xs text-slate-500">{{ $enrollment->student->nis }}</p></td><td class="px-5 py-3"><select name="attendance[{{ $enrollment->student_id }}][status]" class="rounded-lg border-slate-300 text-sm">@foreach(\App\Models\StudentAttendance::STATUSES as $key => $label)<option value="{{ $key }}" @selected(old("attendance.{$enrollment->student_id}.status", $saved?->status ?? 'hadir') === $key)>{{ $label }}</option>@endforeach</select></td><td class="px-5 py-3"><input name="attendance[{{ $enrollment->student_id }}][note]" value="{{ old("attendance.{$enrollment->student_id}.note", $saved?->note) }}" maxlength="500" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Opsional"></td></tr>@empty<tr><td colspan="3"><x-empty-state icon="users" title="Belum ada siswa aktif" description="Tempatkan siswa ke rombel terlebih dahulu." /></td></tr>@endforelse</tbody></table></div>
+        </form>
+    @else <x-empty-state icon="academic" title="Belum ada rombel" description="Buat tahun ajaran dan rombel terlebih dahulu." /> @endif
+</div>
+@endsection

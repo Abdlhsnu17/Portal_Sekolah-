@@ -21,7 +21,8 @@ Portal Sekolah adalah aplikasi web berbasis Laravel yang menyediakan website pro
 | Calon siswa atau orang tua | Mendaftar, mengunggah dokumen, dan mengecek status |
 | Staf sekolah | Mengelola pendaftaran, siswa, guru, berita, galeri, dan profil |
 | Admin | Mengelola seluruh modul, termasuk pengguna dan pengaturan akun |
-| Guru | Memiliki akun dan role aplikasi; dashboard khusus guru belum menjadi scope saat ini |
+| Guru | Melihat jadwal/penugasan miliknya dan mengelola nilai serta absensi pada kelas/mapel yang ditugaskan |
+| Siswa | Melihat jadwal, agenda belajar, nilai yang sudah diisi, dan absensi miliknya sendiri |
 
 ## 4. Scope Fitur
 
@@ -66,7 +67,15 @@ Portal Sekolah adalah aplikasi web berbasis Laravel yang menyediakan website pro
 - CRUD berita, agenda, dan pengumuman.
 - Unggah dan hapus foto galeri.
 - Edit profil sekolah.
-- CRUD pengguna yang dibatasi untuk role admin.
+- CRUD pengguna yang dibatasi untuk role admin, termasuk penautan akun siswa ke satu profil siswa.
+
+### 4.6 Akademik dan Portal Belajar
+
+- Admin mengelola tahun ajaran, kelas, penempatan siswa, jadwal, penugasan guru, dan komponen penilaian.
+- Guru melihat jadwal dan penugasan miliknya, serta mengisi nilai/absensi hanya pada kelas dan mata pelajaran yang ditugaskan.
+- Siswa hanya dapat melihat data akademik dari profil siswa yang ditautkan ke akunnya.
+- Wali hanya dapat melihat data siswa yang ditautkan ke akun wali dan tidak dapat mengubah nilai atau absensi.
+- Materi digital, pengumpulan tugas, dan kuis interaktif belum termasuk modul yang tersedia.
 
 ### 4.6 Keamanan Akun
 
@@ -84,8 +93,10 @@ Portal Sekolah adalah aplikasi web berbasis Laravel yang menyediakan website pro
 | Role | Hak akses |
 | --- | --- |
 | Admin | Seluruh modul, termasuk manajemen pengguna |
-| Staf | Modul operasional admin kecuali manajemen pengguna |
-| Guru | Role aplikasi tersedia; fitur khusus guru belum tersedia |
+| Staf | Modul operasional pendaftaran, siswa, guru, konten, galeri, dan profil sekolah; tidak dapat mengakses pengaturan/admin-only, data pengguna, akademik khusus, keuangan, perpustakaan, aset, atau laporan |
+| Guru | Portal pengajaran, absensi pegawai, dan input nilai/absensi siswa hanya untuk kelas/mapel penugasan; tidak dapat membuka panel operasional admin |
+| Siswa | Portal belajar baca-saja untuk jadwal, agenda penilaian, nilai yang sudah diisi, dan absensi miliknya sendiri |
+| Wali | Portal baca-saja untuk data siswa yang ditautkan ke akun wali |
 | Guest | Website publik, PSB, cek status, dan akses dokumen yang terhubung dengan sesi kepemilikan |
 
 ## 6. Kebutuhan UI/UX
@@ -109,9 +120,9 @@ Portal Sekolah adalah aplikasi web berbasis Laravel yang menyediakan website pro
 
 ## 8. Data Utama
 
-- `users`: akun admin, staf, dan guru.
+- `users`: akun admin, staf, guru, wali, dan siswa.
 - `school_profiles`: informasi profil sekolah.
-- `students`: data siswa.
+- `students`: data siswa beserta tautan opsional ke akun siswa.
 - `teachers`: data guru.
 - `registrations`: data pendaftar PSB.
 - `registration_documents`: dokumen pendaftar.
@@ -132,6 +143,9 @@ Portal Sekolah adalah aplikasi web berbasis Laravel yang menyediakan website pro
 - Pendaftar diterima dapat dikonversi menjadi data siswa.
 - Admin dan staf dapat mengelola siswa, guru, berita, galeri, dan profil sekolah.
 - Admin dapat mengelola pengguna.
+- Guru tidak dapat membuka panel admin dan hanya dapat mengisi nilai/absensi untuk kelas/mapel penugasannya.
+- Siswa hanya dapat membuka portal untuk profil siswa yang ditautkan ke akunnya.
+- Wali hanya dapat melihat data siswa yang ditautkan ke akunnya.
 - Dashboard menampilkan data yang sesuai dengan database.
 - Pengguna dapat mengubah kata sandi dan mencabut sesi lain.
 - `npm run build` berhasil menghasilkan `public/build/manifest.json`.
@@ -141,18 +155,14 @@ Portal Sekolah adalah aplikasi web berbasis Laravel yang menyediakan website pro
 ## 10. Batasan Saat Ini
 
 - Notifikasi email/WhatsApp untuk perubahan status belum tersedia.
-- Pembayaran atau biaya pendaftaran belum tersedia.
+- Pembayaran daring/biaya pendaftaran belum terintegrasi; modul keuangan saat ini hanya mencatat tagihan dan pembayaran.
 - MFA tersedia tetapi dinonaktifkan secara default hingga diaktifkan melalui konfigurasi.
-- Area kerja khusus guru belum tersedia.
-- Export Excel/PDF belum tersedia.
-- Preview dokumen pendaftar langsung di browser belum menjadi fitur utama.
-- Periode PSB, kuota, dan jalur pendaftaran belum tersedia sebagai pengaturan tersendiri.
+- Materi digital, pengumpulan tugas, dan kuis interaktif belum tersedia.
 
 ## 11. Prioritas Berikutnya
 
-1. Audit dan ekspor data pendaftar, siswa, dan guru ke Excel/PDF.
+1. Perluas ekspor CSV menjadi Excel/PDF.
 2. Notifikasi email atau WhatsApp untuk perubahan status pendaftaran.
-3. Dashboard dan fitur operasional khusus guru.
-4. Pengaturan periode PSB, kuota, dan jurusan.
-5. Preview dokumen pendaftar di panel admin.
-6. Aktivasi MFA terstruktur beserta pemulihan akun dan proses dukungan.
+3. Materi belajar, pengumpulan tugas, dan kuis untuk portal guru/siswa.
+4. Integrasi pembayaran daring untuk pendaftaran dan tagihan sekolah.
+5. Aktivasi MFA terstruktur beserta pemulihan akun dan proses dukungan.

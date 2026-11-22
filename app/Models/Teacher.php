@@ -24,6 +24,26 @@ class Teacher extends Model
         return $this->hasMany(Attendance::class);
     }
 
+    public function teachingAssignments(): HasMany
+    {
+        return $this->hasMany(TeachingAssignment::class);
+    }
+
+    public function homeroomClasses(): HasMany
+    {
+        return $this->hasMany(SchoolClass::class, 'homeroom_teacher_id');
+    }
+
+    public function classSchedules(): HasMany
+    {
+        return $this->hasMany(ClassSchedule::class);
+    }
+
+    public function assessments(): HasMany
+    {
+        return $this->hasMany(Assessment::class);
+    }
+
     protected $casts = [
         'tanggal_bergabung' => 'date',
     ];

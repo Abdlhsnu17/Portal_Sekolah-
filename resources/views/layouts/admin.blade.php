@@ -40,30 +40,69 @@
 <a href="#konten-utama" class="skip-link">Lewati ke konten utama</a>
 
 @php
-    $menu = [
-        ['grup' => 'Beranda', 'rute' => 'admin.dashboard', 'label' => 'Dashboard', 'aktif' => 'admin.dashboard', 'ikon' => 'home'],
-        ['grup' => 'Penerimaan Siswa', 'rute' => 'admin.registrations.index', 'label' => 'Pendaftaran', 'aktif' => 'admin.registrations.*', 'ikon' => 'clipboard'],
-        ['grup' => 'Penerimaan Siswa', 'rute' => 'admin.students.index', 'label' => 'Data Siswa', 'aktif' => 'admin.students.*', 'ikon' => 'users'],
-    ];
+    $pengguna = auth()->user();
 
-    if (auth()->user()?->isAdmin()) {
+    if ($pengguna?->isTeacher()) {
+        $menu = [
+            ['grup' => 'Akademik', 'rute' => 'teaching.index', 'label' => 'Pengajaran Saya', 'aktif' => 'teaching.*', 'ikon' => 'academic'],
+        ];
+    } elseif ($pengguna?->isStudent()) {
+        $menu = [
+            ['grup' => 'Akademik', 'rute' => 'student.index', 'label' => 'Belajar Saya', 'aktif' => 'student.*', 'ikon' => 'academic'],
+        ];
+    } else {
+        $menu = [
+            ['grup' => 'Beranda', 'rute' => 'admin.dashboard', 'label' => 'Dashboard', 'aktif' => 'admin.dashboard', 'ikon' => 'home'],
+            ['grup' => 'Penerimaan Siswa', 'rute' => 'admin.registrations.index', 'label' => 'Pendaftaran', 'aktif' => 'admin.registrations.*', 'ikon' => 'clipboard'],
+        ];
+    }
+
+    if ($pengguna?->isAdmin()) {
+        // Susun berdasarkan urutan kerja sekolah: siapkan struktur akademik,
+        // kelola siswa dan pengajar, lalu jalankan kegiatan pembelajaran.
+        $menu[] = ['grup' => 'Penerimaan Siswa', 'rute' => 'admin.admission-settings.index', 'label' => 'Pengaturan PSB', 'aktif' => ['admin.admission-settings.*', 'admin.admission-periods.*', 'admin.admission-paths.*'], 'ikon' => 'clipboard'];
+        $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.students.index', 'label' => 'Data Siswa', 'aktif' => 'admin.students.*', 'ikon' => 'users'];
+        $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.academic-structure.index', 'label' => 'Tahun Ajaran & Kelas', 'aktif' => ['admin.academic-structure.*', 'admin.academic-years.*', 'admin.school-classes.*', 'admin.student-enrollments.*'], 'ikon' => 'academic'];
+        $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.teaching-assignments.index', 'label' => 'Penugasan Mengajar', 'aktif' => ['admin.teaching-assignments.*', 'admin.subjects.*'], 'ikon' => 'academic'];
+        $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.class-schedules.index', 'label' => 'Jadwal Pelajaran', 'aktif' => 'admin.class-schedules.*', 'ikon' => 'clock'];
+        $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.student-attendances.index', 'label' => 'Absensi Siswa', 'aktif' => 'admin.student-attendances.*', 'ikon' => 'users'];
+        $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.assessments.index', 'label' => 'Penilaian', 'aktif' => 'admin.assessments.*', 'ikon' => 'academic'];
+        $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.student-reports.index', 'label' => 'Rekap Nilai & Rapor', 'aktif' => 'admin.student-reports.*', 'ikon' => 'clipboard'];
         $menu[] = ['grup' => 'Kepegawaian', 'rute' => 'admin.staff.index', 'label' => 'Data Staf', 'aktif' => ['admin.staff.*', 'admin.teachers.*'], 'ikon' => 'users'];
         $menu[] = ['grup' => 'Kepegawaian', 'rute' => 'admin.attendances.index', 'label' => 'Absensi Pegawai', 'aktif' => 'admin.attendances.*', 'ikon' => 'clock'];
+        $menu[] = ['grup' => 'Operasional', 'rute' => 'admin.finance.index', 'label' => 'Keuangan', 'aktif' => 'admin.finance.*', 'ikon' => 'clipboard'];
+        $menu[] = ['grup' => 'Operasional', 'rute' => 'admin.library.index', 'label' => 'Perpustakaan', 'aktif' => 'admin.library.*', 'ikon' => 'academic'];
+        $menu[] = ['grup' => 'Operasional', 'rute' => 'admin.assets.index', 'label' => 'Inventaris Aset', 'aktif' => 'admin.assets.*', 'ikon' => 'building'];
+    } elseif (! $pengguna?->isTeacher() && ! $pengguna?->isStudent()) {
+        $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.students.index', 'label' => 'Data Siswa', 'aktif' => 'admin.students.*', 'ikon' => 'users'];
     }
 
     $pemilikAkun = auth()->user();
-    if ($pemilikAkun && ($pemilikAkun->teacher()->where('status', 'aktif')->exists() || $pemilikAkun->staffMember()->where('status', 'aktif')->exists())) {
+    $dapatAbsensi = $pemilikAkun && (
+        ($pemilikAkun->isTeacher() && $pemilikAkun->teacher()->where('status', 'aktif')->exists())
+        || ($pemilikAkun->isAdmin() && ($pemilikAkun->teacher()->where('status', 'aktif')->exists() || $pemilikAkun->staffMember()->where('status', 'aktif')->exists()))
+        || ($pemilikAkun->role === 'staf' && $pemilikAkun->staffMember()->where('status', 'aktif')->exists())
+    );
+    if ($dapatAbsensi && ! $pengguna?->isAdmin()) {
         $menu[] = ['grup' => 'Kepegawaian', 'rute' => 'attendance.check-in', 'label' => 'Absensi', 'aktif' => 'attendance.*', 'ikon' => 'camera'];
     }
 
-    $menu[] = ['grup' => 'Konten Website', 'rute' => 'admin.profile.edit', 'label' => 'Profil Sekolah', 'aktif' => 'admin.profile.*', 'ikon' => 'building'];
-    $menu[] = ['grup' => 'Konten Website', 'rute' => 'admin.announcements.index', 'label' => 'Berita', 'aktif' => 'admin.announcements.*', 'ikon' => 'newspaper'];
-    $menu[] = ['grup' => 'Konten Website', 'rute' => 'admin.galleries.index', 'label' => 'Galeri', 'aktif' => 'admin.galleries.*', 'ikon' => 'photo'];
-
-    if (auth()->user()?->isAdmin()) {
-        $menu[] = ['grup' => 'Administrasi', 'rute' => 'admin.users.index', 'label' => 'Pengguna', 'aktif' => 'admin.users.*', 'ikon' => 'users'];
+    if (! $pengguna?->isTeacher() && ! $pengguna?->isStudent()) {
+        $menu[] = ['grup' => 'Konten Website', 'rute' => 'admin.profile.edit', 'label' => 'Profil Sekolah', 'aktif' => 'admin.profile.*', 'ikon' => 'building'];
+        $menu[] = ['grup' => 'Konten Website', 'rute' => 'admin.announcements.index', 'label' => 'Berita', 'aktif' => 'admin.announcements.*', 'ikon' => 'newspaper'];
+        $menu[] = ['grup' => 'Konten Website', 'rute' => 'admin.galleries.index', 'label' => 'Galeri', 'aktif' => 'admin.galleries.*', 'ikon' => 'photo'];
     }
 
+    if ($pengguna?->isAdmin()) {
+        $menu[] = ['grup' => 'Administrasi', 'rute' => 'admin.users.index', 'label' => 'Pengguna', 'aktif' => 'admin.users.*', 'ikon' => 'users'];
+        $menu[] = ['grup' => 'Administrasi', 'rute' => 'admin.guardians.index', 'label' => 'Akun Wali', 'aktif' => 'admin.guardians.*', 'ikon' => 'users'];
+        $menu[] = ['grup' => 'Administrasi', 'rute' => 'admin.reports.index', 'label' => 'Laporan & Ekspor', 'aktif' => 'admin.reports.*', 'ikon' => 'clipboard'];
+        if ($dapatAbsensi) {
+            $menu[] = ['grup' => 'Administrasi', 'rute' => 'attendance.check-in', 'label' => 'Absensi Saya', 'aktif' => 'attendance.*', 'ikon' => 'camera'];
+        }
+    }
+
+    $ruteBeranda = $pengguna?->isTeacher() ? 'teaching.index' : ($pengguna?->isStudent() ? 'student.index' : 'admin.dashboard');
     $menu[] = ['grup' => 'Administrasi', 'rute' => 'security.index', 'label' => 'Pengaturan', 'aktif' => ['security.*', 'admin.settings.*'], 'ikon' => 'cog'];
 @endphp
 
@@ -76,7 +115,7 @@
             <x-logo tone="light" class="size-11 shrink-0" />
         </div>
 
-        <nav class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2.5" aria-label="Navigasi admin">
+        <nav data-sidebar-navigation class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2.5" aria-label="Navigasi admin">
             @php $grupAktif = null; @endphp
             @foreach ($menu as $item)
                 @if ($grupAktif !== $item['grup'])
@@ -254,9 +293,9 @@
         <x-announcement-ticker admin />
 
         <main id="konten-utama" class="relative flex-1 p-4 sm:p-6 lg:p-8" tabindex="-1">
-            @unless (request()->routeIs('admin.dashboard'))
+            @unless (request()->routeIs($ruteBeranda))
                 <nav class="mb-4 flex items-center gap-1.5 text-xs font-medium text-slate-500" aria-label="Breadcrumb">
-                    <a href="{{ route('admin.dashboard') }}" class="transition hover:text-brand-700">Dashboard</a>
+                    <a href="{{ route($ruteBeranda) }}" class="transition hover:text-brand-700">{{ $pengguna?->isTeacher() ? 'Pengajaran Saya' : ($pengguna?->isStudent() ? 'Belajar Saya' : 'Dashboard') }}</a>
                     <x-icon name="chevron-right" class="size-3.5 text-slate-300" />
                     @php
                         $induk = collect($menu)->first(fn ($item) => request()->routeIs($item['aktif']));

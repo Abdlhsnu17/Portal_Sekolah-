@@ -20,7 +20,7 @@ class AuthController extends Controller
     public function showLogin(Request $request)
     {
         if (Auth::check()) {
-            return redirect()->route('admin.dashboard');
+            return redirect($this->homeRoute(Auth::user()));
         }
 
         $this->ensureCaptcha($request);
@@ -138,8 +138,23 @@ class AuthController extends Controller
             Auth::user()->notify(new NewLoginNotification((string) $request->ip(), (string) $request->userAgent()));
         }
 
-        return redirect()->intended(Auth::user()->password_changed_at?->lt(now()->subYears(50)) ? route('security.index') : route('admin.dashboard'))
+        $user = Auth::user();
+        $home = $user->password_changed_at?->lt(now()->subYears(50))
+            ? route('security.index')
+            : $this->homeRoute($user);
+
+        return redirect()->intended($home)
             ->with('success', 'Selamat datang kembali, '.Auth::user()->name.'!');
+    }
+
+    private function homeRoute(User $user): string
+    {
+        return match ($user->role) {
+            'wali' => route('guardian.index'),
+            'guru' => route('teaching.index'),
+            'siswa' => route('student.index'),
+            default => route('admin.dashboard'),
+        };
     }
 
     public function logout(Request $request)

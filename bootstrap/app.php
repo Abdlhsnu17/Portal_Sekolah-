@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureAdminHasMfa;
 use App\Http\Middleware\EnsurePendaftarTerverifikasi;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureInternalUser;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
+            'internal' => EnsureInternalUser::class,
             'aktif' => EnsureUserIsActive::class,
             'pendaftar' => EnsurePendaftarTerverifikasi::class,
             'mfa' => EnsureAdminHasMfa::class,

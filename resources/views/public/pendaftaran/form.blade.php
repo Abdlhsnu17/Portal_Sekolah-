@@ -7,6 +7,12 @@
                    teks="Lengkapi data berikut dengan benar. Setelah formulir dikirim, sistem menerbitkan nomor pendaftaran untuk mengunggah dokumen dan memantau seleksi." />
 
     <section class="mx-auto max-w-4xl px-6 py-12">
+        @if ($admissionPeriod)
+            <div class="mb-6 rounded-xl border border-brand-200 bg-brand-50 px-5 py-4 text-sm text-brand-900">
+                <p class="font-bold">{{ $admissionPeriod->name }}</p>
+                <p class="mt-1">Pendaftaran {{ $admissionPeriod->starts_on->translatedFormat('d F Y') }} sampai {{ $admissionPeriod->ends_on->translatedFormat('d F Y') }}@if($admissionPeriod->quota) · kuota {{ $admissionPeriod->quota }} siswa@endif.</p>
+            </div>
+        @endif
         {{-- Penanda langkah --}}
         <ol class="mb-10 flex items-center gap-3 text-sm">
             @foreach ([['1', 'Isi formulir', true], ['2', 'Unggah dokumen', false], ['3', 'Pantau status', false]] as $i => [$no, $label, $aktif])
@@ -41,6 +47,9 @@
                     <x-form.input name="tanggal_lahir" label="Tanggal Lahir" type="date" required />
                     <x-form.input name="asal_sekolah" label="Asal Sekolah" required />
                     <x-form.input name="jurusan_pilihan" label="Jurusan Pilihan" required placeholder="Contoh: MIPA" />
+                    @if ($admissionPaths->isNotEmpty())
+                        <x-form.select name="admission_path_id" label="Jalur Pendaftaran" required :options="$admissionPaths->pluck('name', 'id')->all()" placeholder="Pilih jalur" />
+                    @endif
                 </div>
             </fieldset>
 

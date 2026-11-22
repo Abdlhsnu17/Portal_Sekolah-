@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 
 class Registration extends Model
@@ -26,7 +27,7 @@ class Registration extends Model
         'nomor_pendaftaran', 'nama_lengkap', 'nisn', 'jenis_kelamin',
         'tempat_lahir', 'tanggal_lahir', 'asal_sekolah', 'jurusan_pilihan',
         'email', 'telepon', 'alamat', 'nama_wali', 'telepon_wali',
-        'status', 'catatan',
+        'status', 'catatan', 'admission_period_id', 'admission_path_id',
     ];
 
     protected $casts = [
@@ -36,6 +37,16 @@ class Registration extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(RegistrationDocument::class);
+    }
+
+    public function admissionPeriod(): BelongsTo
+    {
+        return $this->belongsTo(AdmissionPeriod::class);
+    }
+
+    public function admissionPath(): BelongsTo
+    {
+        return $this->belongsTo(AdmissionPath::class);
     }
 
     public function scopeSearch(Builder $query, ?string $term): Builder

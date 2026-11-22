@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
 use App\Models\Student;
+use App\Notifications\RegistrationStatusNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class RegistrationController extends Controller
 {
@@ -45,6 +48,18 @@ class RegistrationController extends Controller
         return Storage::disk('local')->download($doc->path, $doc->nama_file);
     }
 
+    /** Pratinjau hanya untuk tipe aman yang didukung browser, tetap dari disk privat. */
+    public function previewDokumen(Registration $registration, int $dokumen): BinaryFileResponse
+    {
+        $doc = $registration->documents()->findOrFail($dokumen);
+        $extension = strtolower(pathinfo($doc->nama_file, PATHINFO_EXTENSION));
+        abort_unless(in_array($extension, ['pdf', 'jpg', 'jpeg', 'png'], true), 415, 'Jenis dokumen tidak dapat dipratinjau.');
+
+        return response()->file(Storage::disk('local')->path($doc->path), [
+            'Content-Disposition' => 'inline; filename="'.addslashes($doc->nama_file).'"',
+        ]);
+    }
+
     public function update(Request $request, Registration $registration)
     {
         $data = $request->validate([
@@ -52,9 +67,20 @@ class RegistrationController extends Controller
             'catatan' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $changed = $registration->status !== $data['status'] || $registration->catatan !== ($data['catatan'] ?? null);
         $registration->update($data);
 
-        return back()->with('success', 'Status pendaftaran diperbarui.');
+        if ($changed && filled($registration->email)) {
+            try {
+                Notification::route('mail', $registration->email)->notify(new RegistrationStatusNotification($registration));
+            } catch (\Throwable $exception) {
+                report($exception);
+
+                return back()->with('warning', 'Status diperbarui, tetapi email pemberitahuan belum terkirim. Periksa konfigurasi mail.');
+            }
+        }
+
+        return back()->with('success', 'Status pendaftaran diperbarui'.($changed ? ' dan email pemberitahuan dikirim.' : '.'));
     }
 
     /** Promosikan pendaftar yang diterima menjadi siswa aktif. */

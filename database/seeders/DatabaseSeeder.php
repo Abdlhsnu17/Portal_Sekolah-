@@ -8,6 +8,7 @@ use App\Models\Registration;
 use App\Models\SchoolProfile;
 use App\Models\StaffMember;
 use App\Models\Student;
+use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -128,6 +129,11 @@ class DatabaseSeeder extends Seeder
                     'alamat' => 'Jakarta Timur',
                     'status' => 'aktif',
                 ]
+            );
+
+            Subject::firstOrCreate(
+                ['nama' => $mapel],
+                ['kode' => 'MAPEL-'.str_pad((string) ($i + 1), 3, '0', STR_PAD_LEFT), 'is_active' => true],
             );
         }
     }
