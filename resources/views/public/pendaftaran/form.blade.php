@@ -10,7 +10,13 @@
         @if ($admissionPeriod)
             <div class="mb-6 rounded-xl border border-brand-200 bg-brand-50 px-5 py-4 text-sm text-brand-900">
                 <p class="font-bold">{{ $admissionPeriod->name }}</p>
-                <p class="mt-1">Pendaftaran {{ $admissionPeriod->starts_on->translatedFormat('d F Y') }} sampai {{ $admissionPeriod->ends_on->translatedFormat('d F Y') }}@if($admissionPeriod->quota) · kuota {{ $admissionPeriod->quota }} siswa@endif.</p>
+                <p class="mt-1">
+                    Pendaftaran {{ $admissionPeriod->starts_on->translatedFormat('d F Y') }} sampai {{ $admissionPeriod->ends_on->translatedFormat('d F Y') }}
+                    @if ($admissionPeriod->quota)
+                        · kuota {{ $admissionPeriod->quota }} siswa
+                    @endif
+                    .
+                </p>
             </div>
         @endif
         {{-- Penanda langkah --}}

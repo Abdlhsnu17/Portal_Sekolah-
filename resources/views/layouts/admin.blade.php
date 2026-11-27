@@ -23,11 +23,6 @@
 
                 if (ciut) {
                     delete html.dataset.sidebar;
-                } elseif ($pengguna?->role === 'staf') {
-                    $menu = [
-                        ['grup' => 'Beranda', 'rute' => 'staff.dashboard', 'label' => 'Dashboard Staf', 'aktif' => 'staff.dashboard', 'ikon' => 'home'],
-                        ['grup' => 'Penerimaan Siswa', 'rute' => 'admin.registrations.index', 'label' => 'Pendaftaran', 'aktif' => 'admin.registrations.*', 'ikon' => 'clipboard'],
-                    ];
                 } else {
                     html.dataset.sidebar = 'collapsed';
                 }
@@ -35,12 +30,19 @@
                 try {
                     localStorage.setItem('sidebar', ciut ? 'expanded' : 'collapsed');
                 } catch (e) { /* abaikan bila penyimpanan tidak tersedia */ }
+
+                window.dispatchEvent(new CustomEvent('sidebar-toggled', {
+                    detail: { collapsed: !ciut },
+                }));
             };
         })();
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="admin-shell min-h-screen font-sans text-slate-700 antialiased" x-data="{ sidebar: false }">
+<body class="admin-shell min-h-screen font-sans text-slate-700 antialiased"
+      x-data="{ sidebar: false, sidebarCollapsed: document.documentElement.dataset.sidebar === 'collapsed' }"
+      @keydown.escape.window="sidebar = false"
+      @sidebar-toggled.window="sidebarCollapsed = $event.detail.collapsed">
 
 <a href="#konten-utama" class="skip-link">Lewati ke konten utama</a>
 
@@ -139,7 +141,7 @@
 <div class="admin-layout flex overflow-hidden">
     {{-- Sidebar --}}
     {{-- Posisi awal ditulis statis agar tidak menutupi konten sebelum Alpine aktif --}}
-    <aside :class="sidebar && 'translate-x-0!'"
+    <aside id="sidebar-admin" :class="sidebar && 'translate-x-0!'"
            class="admin-sidebar fixed inset-y-0 left-0 z-40 flex shrink-0 -translate-x-full flex-col overflow-hidden border-r border-white/10 bg-brand-950 shadow-2xl shadow-brand-950/20 transition-transform lg:static lg:translate-x-0 lg:shadow-none">
         <div class="sidebar-link flex h-16 items-center justify-center border-b border-white/10 px-5">
             <x-logo tone="light" class="size-11 shrink-0" />
@@ -180,6 +182,15 @@
         </div>
     </aside>
 
+    {{-- Kontrol laci seluler mengikuti tepi sidebar saat panel terbuka. --}}
+    <button type="button" @click="sidebar = !sidebar" :aria-label="sidebar ? 'Tutup menu' : 'Buka menu'"
+            :title="sidebar ? 'Tutup menu' : 'Buka menu'" :aria-expanded="sidebar.toString()" aria-controls="sidebar-admin"
+            style="left: 1rem" :style="sidebar ? 'left: calc(16rem - 1.125rem)' : 'left: 1rem'"
+            class="fixed top-5 z-50 grid size-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-card transition-[left,background-color,color] duration-200 hover:bg-slate-50 lg:hidden">
+        <x-icon x-show="!sidebar" name="menu" class="size-5" />
+        <x-icon x-show="sidebar" x-cloak name="chevron-right" class="size-5 rotate-180" />
+    </button>
+
     <div x-show="sidebar" x-cloak @click="sidebar = false" x-transition.opacity
          class="fixed inset-0 z-30 bg-brand-950/60 lg:hidden"></div>
 
@@ -187,17 +198,12 @@
     <div class="admin-content relative flex min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain">
         <header class="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-slate-200/80 bg-white/88 px-4 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur-xl sm:px-6">
             <div class="flex min-w-0 items-center gap-3">
-                {{-- Layar kecil: buka laci sidebar --}}
-                <button @click="sidebar = !sidebar" aria-label="Buka menu"
-                        class="grid size-9 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50 lg:hidden">
-                    <x-icon name="menu" />
-                </button>
-
                 {{-- Layar lebar: ciutkan sidebar agar area kerja melebar --}}
-                <button type="button" onclick="toggleSidebar()" aria-label="Ciutkan menu"
-                        title="Ciutkan / bentangkan menu"
+                <button type="button" onclick="toggleSidebar()" :aria-label="sidebarCollapsed ? 'Bentangkan menu' : 'Ciutkan menu'"
+                        :title="sidebarCollapsed ? 'Bentangkan menu' : 'Ciutkan menu'" :aria-expanded="(!sidebarCollapsed).toString()" aria-controls="sidebar-admin"
                         class="hidden size-9 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50 lg:grid">
-                    <x-icon name="menu" />
+                    <x-icon x-show="!sidebarCollapsed" name="chevron-right" class="size-5 rotate-180" />
+                    <x-icon x-show="sidebarCollapsed" x-cloak name="menu" class="size-5" />
                 </button>
                 <div class="min-w-0">
                     <h1 class="truncate text-base font-bold tracking-tight text-brand-950">@yield('title', 'Dashboard')</h1>
