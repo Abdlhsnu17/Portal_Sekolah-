@@ -86,4 +86,9 @@ class Student extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function submissions(): HasMany { return $this->hasMany(AssignmentSubmission::class); }
+    public function reportCards(): HasMany { return $this->hasMany(ReportCard::class); }
+    public function incidents(): HasMany { return $this->hasMany(StudentIncident::class); }
+    public function libraryReservations(): HasMany { return $this->hasMany(LibraryReservation::class); }
 }

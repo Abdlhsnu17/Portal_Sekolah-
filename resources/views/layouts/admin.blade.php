@@ -54,6 +54,8 @@
             ['grup' => 'Akademik', 'rute' => 'teaching.index', 'label' => 'Dashboard Guru', 'aktif' => 'teaching.index', 'ikon' => 'academic'],
             ['grup' => 'Akademik', 'rute' => 'teaching.schedule', 'label' => 'Jadwal Mengajar', 'aktif' => 'teaching.schedule', 'ikon' => 'clock'],
             ['grup' => 'Akademik', 'rute' => 'teaching.notes.index', 'label' => 'Catatan Siswa', 'aktif' => 'teaching.notes.*', 'ikon' => 'clipboard'],
+            ['grup' => 'Akademik', 'rute' => 'teaching.learning.index', 'label' => 'Materi & Tugas', 'aktif' => 'teaching.learning.*', 'ikon' => 'academic'],
+            ['grup' => 'Akademik', 'rute' => 'messages.index', 'label' => 'Pesan Wali', 'aktif' => 'messages.*', 'ikon' => 'clipboard'],
             ['grup' => 'Akademik', 'rute' => 'teaching.assessments.index', 'label' => 'Penilaian Siswa', 'aktif' => 'teaching.assessments.*', 'ikon' => 'clipboard'],
         ];
     } elseif ($pengguna?->isStudent()) {
@@ -61,6 +63,9 @@
             ['grup' => 'Akademik', 'rute' => 'student.index', 'label' => 'Dashboard Siswa', 'aktif' => 'student.index', 'ikon' => 'academic'],
             ['grup' => 'Akademik', 'rute' => 'student.schedule', 'label' => 'Jadwal Pelajaran', 'aktif' => 'student.schedule', 'ikon' => 'clock'],
             ['grup' => 'Akademik', 'rute' => 'student.notes', 'label' => 'Catatan Saya', 'aktif' => 'student.notes', 'ikon' => 'clipboard'],
+            ['grup' => 'Akademik', 'rute' => 'student.learning', 'label' => 'Materi & Tugas', 'aktif' => 'student.learning', 'ikon' => 'academic'],
+            ['grup' => 'Akademik', 'rute' => 'student.reports', 'label' => 'Rapor Semester', 'aktif' => 'student.reports', 'ikon' => 'clipboard'],
+            ['grup' => 'Layanan', 'rute' => 'student.library', 'label' => 'Perpustakaan', 'aktif' => 'student.library', 'ikon' => 'academic'],
         ];
     } else {
         $menu = [
@@ -80,6 +85,7 @@
         $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.student-attendances.index', 'label' => 'Absensi Siswa', 'aktif' => 'admin.student-attendances.*', 'ikon' => 'users'];
         $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.assessments.index', 'label' => 'Penilaian', 'aktif' => 'admin.assessments.*', 'ikon' => 'academic'];
         $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.student-reports.index', 'label' => 'Rekap Nilai & Rapor', 'aktif' => 'admin.student-reports.*', 'ikon' => 'clipboard'];
+        $menu[] = ['grup' => 'Akademik', 'rute' => 'admin.student-affairs.index', 'label' => 'BK & Kesiswaan', 'aktif' => 'admin.student-affairs.*', 'ikon' => 'users'];
         $menu[] = ['grup' => 'Kepegawaian', 'rute' => 'admin.staff.index', 'label' => 'Data Staf', 'aktif' => ['admin.staff.*', 'admin.teachers.*'], 'ikon' => 'users'];
         $menu[] = ['grup' => 'Kepegawaian', 'rute' => 'admin.attendances.index', 'label' => 'Absensi Pegawai', 'aktif' => 'admin.attendances.*', 'ikon' => 'clock'];
         $menu[] = ['grup' => 'Operasional', 'rute' => 'admin.finance.index', 'label' => 'Keuangan', 'aktif' => 'admin.finance.*', 'ikon' => 'clipboard'];

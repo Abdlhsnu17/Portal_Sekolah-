@@ -10,9 +10,11 @@ use App\Models\SchoolProfile;
 use App\Models\SiteSetting;
 use App\Models\StaffMember;
 use App\Models\Student;
+use App\Models\StudentAttendance;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Observers\ActivityObserver;
+use App\Observers\StudentAttendanceObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -41,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
             Attendance::class, Announcement::class, Gallery::class, SchoolProfile::class, User::class] as $model) {
             $model::observe(ActivityObserver::class);
         }
+        StudentAttendance::observe(StudentAttendanceObserver::class);
 
         View::composer(['layouts.public', 'layouts.admin'], function ($view) {
             $view->with([

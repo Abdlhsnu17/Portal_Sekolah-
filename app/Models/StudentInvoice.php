@@ -20,5 +20,6 @@ class StudentInvoice extends Model {
     protected $fillable=['student_id','category','title','amount','due_date','status']; protected $casts=['amount'=>'decimal:2','due_date'=>'date'];
     public function student(): BelongsTo { return $this->belongsTo(Student::class); }
     public function payments(): HasMany { return $this->hasMany(StudentPayment::class); }
+    public function paymentRequests(): HasMany { return $this->hasMany(InvoicePaymentRequest::class); }
     public function refreshStatus(): void { $paid=(float)$this->payments()->sum('amount'); $this->update(['status'=>$paid >= (float)$this->amount ? 'lunas' : ($paid > 0 ? 'sebagian' : 'belum_lunas')]); }
 }

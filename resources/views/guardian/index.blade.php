@@ -11,6 +11,7 @@
             </div>
             <div class="flex gap-2">
                 <a href="{{ route('guardian.notes') }}" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50">Catatan siswa</a>
+                <a href="{{ route('messages.index') }}" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50">Pesan guru</a>
                 <form method="POST" action="{{ route('logout') }}">@csrf<button class="rounded-lg border px-4 py-2 text-sm font-semibold">Keluar</button></form>
             </div>
         </div>
@@ -29,11 +30,12 @@
                             <ul class="mt-2 text-sm text-slate-600">
                                 @forelse($item['scores'] as $mapel => $nilai)<li>{{ $mapel }}: <b>{{ $nilai }}</b></li>@empty<li>Belum ada nilai.</li>@endforelse
                             </ul>
+                            @foreach($item['reports'] as $report)<p class="mt-2 text-sm text-brand-700">Rapor {{ $report->academicYear->name }} · {{ ucfirst($report->semester) }} telah terbit.</p>@endforeach
                         </div>
                         <div>
                             <h3 class="font-bold">Tagihan</h3>
                             <ul class="mt-2 text-sm text-slate-600">
-                                @forelse($item['invoices'] as $invoice)<li>{{ $invoice->title }}: Rp {{ number_format(max(0, (float) $invoice->amount - (float) ($invoice->payments_sum_amount ?? 0)), 0, ',', '.') }}</li>@empty<li>Tidak ada tagihan.</li>@endforelse
+                                @forelse($item['invoices'] as $invoice)<li class="mb-2">{{ $invoice->title }}: Rp {{ number_format(max(0, (float) $invoice->amount - (float) ($invoice->payments_sum_amount ?? 0)), 0, ',', '.') }} @if($invoice->status !== 'lunas')<form method="POST" action="{{ route('guardian.invoices.pay', $invoice) }}" class="mt-1">@csrf<button class="text-xs font-semibold text-brand-700">Buat referensi bayar</button></form>@endif</li>@empty<li>Tidak ada tagihan.</li>@endforelse
                             </ul>
                         </div>
                         <div>

@@ -4,14 +4,20 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\AttendanceCheckInController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GuardianPortalController;
+use App\Http\Controllers\GuardianMessageController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\StaffDashboardController;
 use App\Http\Controllers\StudentPortalController;
 use App\Http\Controllers\TeachingController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+
+Route::post('/integrasi/pembayaran/webhook', [PaymentWebhookController::class, 'handle'])
+    ->withoutMiddleware([VerifyCsrfToken::class])->middleware('throttle:60,1')->name('payments.webhook');
 
 /*
 |--------------------------------------------------------------------------
@@ -66,6 +72,9 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 Route::get('/portal-wali', [GuardianPortalController::class, 'index'])->middleware(['auth', 'aktif'])->name('guardian.index');
+Route::get('/pesan', [GuardianMessageController::class, 'index'])->middleware(['auth', 'aktif'])->name('messages.index');
+Route::post('/pesan', [GuardianMessageController::class, 'store'])->middleware(['auth', 'aktif'])->name('messages.store');
+Route::post('/portal-wali/tagihan/{invoice}/bayar', [GuardianPortalController::class, 'requestPayment'])->middleware(['auth', 'aktif'])->name('guardian.invoices.pay');
 Route::get('/portal-siswa', [StudentPortalController::class, 'index'])->middleware(['auth', 'aktif', 'mfa'])->name('student.index');
 Route::get('/staf/dashboard', [StaffDashboardController::class, 'index'])
     ->middleware(['auth', 'aktif', 'mfa', 'internal'])->name('staff.dashboard');
@@ -100,6 +109,10 @@ Route::get('/pengajaran-saya', [TeachingController::class, 'index'])
     ->middleware(['auth', 'aktif', 'mfa'])->name('teaching.index');
 
 Route::prefix('pengajaran-saya')->name('teaching.')->middleware(['auth', 'aktif', 'mfa'])->group(function () {
+    Route::get('/pembelajaran', [TeachingController::class, 'learning'])->name('learning.index');
+    Route::post('/materi', [TeachingController::class, 'storeResource'])->name('learning.resources.store');
+    Route::post('/tugas', [TeachingController::class, 'storeAssignment'])->name('learning.assignments.store');
+    Route::put('/tugas/{assignment}/nilai', [TeachingController::class, 'reviewSubmission'])->name('learning.submissions.review');
     Route::get('/jadwal', [TeachingController::class, 'schedule'])->name('schedule');
     Route::get('/catatan-siswa', [TeachingController::class, 'notes'])->name('notes.index');
     Route::post('/catatan-siswa', [TeachingController::class, 'storeNote'])->name('notes.store');
@@ -115,6 +128,16 @@ Route::get('/portal-siswa/jadwal', [StudentPortalController::class, 'schedule'])
     ->middleware(['auth', 'aktif', 'mfa'])->name('student.schedule');
 Route::get('/portal-siswa/catatan', [StudentPortalController::class, 'notes'])
     ->middleware(['auth', 'aktif', 'mfa'])->name('student.notes');
+Route::get('/portal-siswa/pembelajaran', [StudentPortalController::class, 'learning'])
+    ->middleware(['auth', 'aktif', 'mfa'])->name('student.learning');
+Route::get('/portal-siswa/rapor', [StudentPortalController::class, 'reportCards'])
+    ->middleware(['auth', 'aktif', 'mfa'])->name('student.reports');
+Route::get('/portal-siswa/perpustakaan', [StudentPortalController::class, 'library'])
+    ->middleware(['auth', 'aktif', 'mfa'])->name('student.library');
+Route::post('/portal-siswa/perpustakaan/{book}/reservasi', [StudentPortalController::class, 'reserveBook'])
+    ->middleware(['auth', 'aktif', 'mfa'])->name('student.library.reserve');
+Route::post('/portal-siswa/tugas/{assignment}', [StudentPortalController::class, 'submitAssignment'])
+    ->middleware(['auth', 'aktif', 'mfa'])->name('student.assignments.submit');
 Route::get('/portal-wali/catatan', [GuardianPortalController::class, 'notes'])
     ->middleware(['auth', 'aktif'])->name('guardian.notes');
 
@@ -171,12 +194,17 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa', 'int
     Route::get('akademik/penilaian/{assessment}/nilai', [Admin\AssessmentController::class, 'scores'])->middleware('admin')->name('assessments.scores');
     Route::put('akademik/penilaian/{assessment}/nilai', [Admin\AssessmentController::class, 'storeScores'])->middleware('admin')->name('assessments.scores.store');
     Route::get('akademik/rapor', [Admin\StudentReportController::class, 'index'])->middleware('admin')->name('student-reports.index');
+    Route::post('akademik/rapor/generate', [Admin\StudentReportController::class, 'generate'])->middleware('admin')->name('student-reports.generate');
+    Route::put('akademik/rapor/{reportCard}', [Admin\StudentReportController::class, 'publish'])->middleware('admin')->name('student-reports.publish');
     Route::get('laporan', [Admin\ReportExportController::class, 'index'])->middleware('admin')->name('reports.index');
     Route::get('laporan/siswa', [Admin\ReportExportController::class, 'students'])->middleware('admin')->name('reports.students');
     Route::get('laporan/guru', [Admin\ReportExportController::class, 'teachers'])->middleware('admin')->name('reports.teachers');
     Route::get('laporan/pendaftar', [Admin\ReportExportController::class, 'registrations'])->middleware('admin')->name('reports.registrations');
     Route::get('laporan/absensi-siswa', [Admin\ReportExportController::class, 'attendances'])->middleware('admin')->name('reports.attendances');
     Route::get('laporan/nilai', [Admin\ReportExportController::class, 'scores'])->middleware('admin')->name('reports.scores');
+    Route::get('laporan/keuangan', [Admin\ReportExportController::class, 'finance'])->middleware('admin')->name('reports.finance');
+    Route::get('laporan/aset', [Admin\ReportExportController::class, 'assets'])->middleware('admin')->name('reports.assets');
+    Route::get('laporan/risiko-siswa', [Admin\ReportExportController::class, 'studentRisks'])->middleware('admin')->name('reports.student-risks');
     Route::get('keuangan', [Admin\FinanceController::class, 'index'])->middleware('admin')->name('finance.index');
     Route::get('keuangan/siswa', [Admin\FinanceController::class, 'searchStudents'])->middleware('admin')->name('finance.students.search');
     Route::post('keuangan/tagihan', [Admin\FinanceController::class, 'storeInvoice'])->middleware('admin')->name('finance.invoices.store');
@@ -194,8 +222,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'aktif', 'mfa', 'int
     Route::put('perpustakaan/peminjaman/{libraryLoan}/kembali', [Admin\LibraryController::class, 'returnLoan'])->middleware('admin')->name('library.loans.return');
     Route::get('aset', [Admin\AssetController::class, 'index'])->middleware('admin')->name('assets.index');
     Route::post('aset', [Admin\AssetController::class, 'store'])->middleware('admin')->name('assets.store');
+    Route::post('aset/peminjaman', [Admin\AssetController::class, 'storeLoan'])->middleware('admin')->name('assets.loans.store');
+    Route::put('aset/peminjaman/{loan}/kembali', [Admin\AssetController::class, 'returnLoan'])->middleware('admin')->name('assets.loans.return');
+    Route::post('aset/perawatan', [Admin\AssetController::class, 'storeMaintenance'])->middleware('admin')->name('assets.maintenances.store');
     Route::put('aset/{asset}', [Admin\AssetController::class, 'update'])->middleware('admin')->name('assets.update');
     Route::delete('aset/{asset}', [Admin\AssetController::class, 'destroy'])->middleware('admin')->name('assets.destroy');
+    Route::get('kesiswaan', [Admin\StudentAffairsController::class, 'index'])->middleware('admin')->name('student-affairs.index');
+    Route::post('kesiswaan', [Admin\StudentAffairsController::class, 'store'])->middleware('admin')->name('student-affairs.store');
     Route::get('penugasan-mengajar', [Admin\TeachingAssignmentController::class, 'index'])->middleware('admin')->name('teaching-assignments.index');
     Route::post('penugasan-mengajar/mapel', [Admin\TeachingAssignmentController::class, 'storeSubject'])->middleware('admin')->name('subjects.store');
     Route::post('penugasan-mengajar', [Admin\TeachingAssignmentController::class, 'store'])->middleware('admin')->name('teaching-assignments.store');

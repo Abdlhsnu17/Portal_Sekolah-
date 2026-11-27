@@ -71,6 +71,17 @@
         </section>
 
         @if ($student)
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
+                <h2 class="font-bold text-brand-950">Rapor semester</h2>
+                <form method="POST" action="{{ route('admin.student-reports.generate') }}" class="mt-4 flex flex-wrap items-end gap-3">@csrf
+                    <input type="hidden" name="student_id" value="{{ $student->id }}">
+                    <label class="text-sm">Tahun ajaran<select name="academic_year_id" class="mt-1 block rounded-lg border-slate-200">@foreach($years as $year)<option value="{{ $year->id }}" @selected($year->is_active)>{{ $year->name }}</option>@endforeach</select></label>
+                    <label class="text-sm">Semester<select name="semester" class="mt-1 block rounded-lg border-slate-200"><option value="ganjil">Ganjil</option><option value="genap">Genap</option></select></label>
+                    <label class="text-sm">KKM<input type="number" name="minimum_score" value="75" min="0" max="100" class="mt-1 block w-24 rounded-lg border-slate-200"></label>
+                    <button class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white">Buat/perbarui draf</button>
+                </form>
+                <div class="mt-4 space-y-3">@forelse($reportCards as $report)<div class="rounded-xl bg-slate-50 p-4"><div class="flex flex-wrap items-center justify-between gap-2"><p class="font-semibold">{{ $report->academicYear->name }} · {{ ucfirst($report->semester) }} <span class="text-sm font-normal text-slate-500">{{ $report->published_at ? 'Terbit' : 'Draf' }}{{ $report->locked_at ? ' · Dikunci' : '' }}</span></p><span class="text-sm">{{ $report->items->count() }} mapel</span></div><form method="POST" action="{{ route('admin.student-reports.publish', $report) }}" class="mt-3 flex flex-wrap items-end gap-2">@csrf @method('PUT')<textarea name="homeroom_note" placeholder="Catatan wali kelas" class="min-w-64 rounded-lg border-slate-200 text-sm">{{ $report->homeroom_note }}</textarea><label class="text-sm"><input type="checkbox" name="publish" value="1" @checked($report->published_at)> Terbitkan</label><label class="text-sm"><input type="checkbox" name="lock" value="1"> Kunci</label><button class="rounded-lg border border-brand-200 px-3 py-2 text-sm font-semibold text-brand-700">Simpan</button></form></div>@empty<p class="text-sm text-slate-500">Belum ada rapor semester.</p>@endforelse</div>
+            </section>
             <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
                 <div class="border-b border-slate-100 p-5">
                     <h2 class="text-lg font-bold text-brand-950">{{ $student->nama }}</h2>

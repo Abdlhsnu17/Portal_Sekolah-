@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assessment;
+use App\Models\Assignment;
+use App\Models\AssignmentSubmission;
+use App\Models\LearningResource;
+use App\Notifications\ActivityNotification;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentAttendance;
@@ -179,6 +183,49 @@ class TeachingController extends Controller
         return view('teaching.assessments', compact('assessmentGroups'));
     }
 
+    public function learning(Request $request)
+    {
+        $teacher = $this->teacherFor($request);
+        $classIds = $this->classIdsForTeacher($teacher);
+        return view('teaching.learning', [
+            'classes' => SchoolClass::whereIn('id', $classIds)->with('academicYear')->orderBy('name')->get(),
+            'subjects' => $teacher->teachingAssignments()->with('subject')->get()->pluck('subject')->unique('id')->values(),
+            'resources' => LearningResource::whereIn('school_class_id', $classIds)->with(['schoolClass', 'subject'])->latest()->get(),
+            'assignments' => Assignment::whereIn('school_class_id', $classIds)->with(['schoolClass', 'subject'])->withCount('submissions')->latest()->get(),
+        ]);
+    }
+
+    public function storeResource(Request $request)
+    {
+        $teacher = $this->teacherFor($request);
+        $data = $request->validate(['school_class_id' => ['required', Rule::exists('school_classes', 'id')], 'subject_id' => ['required', Rule::exists('subjects', 'id')], 'title' => ['required', 'string', 'max:180'], 'content' => ['nullable', 'string', 'max:10000'], 'publish' => ['nullable', 'boolean']]);
+        $class = SchoolClass::with('academicYear')->findOrFail($data['school_class_id']);
+        abort_unless($this->hasAssignment($teacher, $class, (int) $data['subject_id']), 403);
+        $resource = LearningResource::create($data + ['teacher_id' => $teacher->id, 'published_at' => $request->boolean('publish') ? now() : null]);
+        if ($resource->published_at) $this->notifyClassStudents($class, 'Materi baru', 'Materi '.$resource->title.' telah diterbitkan.', route('student.learning'));
+        return back()->with('success', 'Materi belajar disimpan.');
+    }
+
+    public function storeAssignment(Request $request)
+    {
+        $teacher = $this->teacherFor($request);
+        $data = $request->validate(['school_class_id' => ['required', Rule::exists('school_classes', 'id')], 'subject_id' => ['required', Rule::exists('subjects', 'id')], 'title' => ['required', 'string', 'max:180'], 'instructions' => ['nullable', 'string', 'max:10000'], 'due_at' => ['nullable', 'date'], 'maximum_score' => ['required', 'numeric', 'min:1', 'max:100'], 'publish' => ['nullable', 'boolean']]);
+        $class = SchoolClass::with('academicYear')->findOrFail($data['school_class_id']);
+        abort_unless($this->hasAssignment($teacher, $class, (int) $data['subject_id']), 403);
+        $assignment = Assignment::create($data + ['teacher_id' => $teacher->id, 'is_published' => $request->boolean('publish')]);
+        if ($assignment->is_published) $this->notifyClassStudents($class, 'Tugas baru', 'Tugas '.$assignment->title.' telah diterbitkan.', route('student.learning'));
+        return back()->with('success', 'Tugas disimpan.');
+    }
+
+    public function reviewSubmission(Request $request, Assignment $assignment)
+    {
+        $teacher = $this->teacherFor($request); $assignment->load('schoolClass.academicYear');
+        abort_unless($assignment->teacher_id === $teacher->id && $this->hasAssignment($teacher, $assignment->schoolClass, $assignment->subject_id), 403);
+        $data = $request->validate(['student_id' => ['required', Rule::exists('students', 'id')], 'score' => ['nullable', 'numeric', 'min:0', 'max:'.$assignment->maximum_score], 'feedback' => ['nullable', 'string', 'max:5000']]);
+        AssignmentSubmission::where('assignment_id', $assignment->id)->where('student_id', $data['student_id'])->update($data + ['reviewed_by' => $request->user()->id, 'reviewed_at' => now()]);
+        return back()->with('success', 'Umpan balik tugas disimpan.');
+    }
+
     public function storeScores(Request $request, Assessment $assessment)
     {
         $teacher = $this->teacherFor($request);
@@ -324,5 +371,17 @@ class TeachingController extends Controller
             ->whereHas('enrollments', fn ($query) => $query->where('status', 'aktif')->whereIn('school_class_id', $classIds))
             ->orderBy('nama')
             ->get();
+    }
+
+    private function classIdsForTeacher(Teacher $teacher)
+    {
+        $assignments = $teacher->teachingAssignments()->get(['kelas', 'tahun_ajaran']);
+        return SchoolClass::query()->where(function ($query) use ($assignments) { foreach ($assignments as $assignment) { $query->orWhere(fn ($q) => $q->where('name', $assignment->kelas)->whereHas('academicYear', fn ($year) => $year->where('name', $assignment->tahun_ajaran))); } })->pluck('id');
+    }
+
+    private function notifyClassStudents(SchoolClass $schoolClass, string $title, string $message, string $url): void
+    {
+        $schoolClass->loadMissing('enrollments.student.user');
+        foreach ($schoolClass->enrollments->where('status', 'aktif') as $enrollment) if ($enrollment->student->user) $enrollment->student->user->notify(new ActivityNotification(['title' => $title, 'message' => $message, 'url' => $url, 'type' => 'learning']));
     }
 }

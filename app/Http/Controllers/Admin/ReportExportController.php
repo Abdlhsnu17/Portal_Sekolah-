@@ -7,6 +7,9 @@ use App\Models\Assessment;
 use App\Models\Registration;
 use App\Models\Student;
 use App\Models\StudentAttendance;
+use App\Models\StudentInvoice;
+use App\Models\SchoolAsset;
+use App\Models\StudentIncident;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -48,6 +51,22 @@ class ReportExportController extends Controller
     {
         $assessments = Assessment::with(['schoolClass.academicYear', 'subject', 'scores.student'])->latest('assessment_date')->get();
         return $this->csv('nilai-siswa', ['Tanggal', 'Rombel', 'Tahun ajaran', 'Mata pelajaran', 'Penilaian', 'NIS', 'Nama', 'Nilai', 'Maksimum', 'Catatan'], $assessments->flatMap(fn ($assessment) => $assessment->scores->map(fn ($score) => compact('assessment', 'score'))), fn ($row) => [$row['assessment']->assessment_date->format('Y-m-d'), $row['assessment']->schoolClass->name, $row['assessment']->schoolClass->academicYear->name, $row['assessment']->subject->nama, $row['assessment']->title, $row['score']->student->nis, $row['score']->student->nama, $row['score']->score, $row['assessment']->maximum_score, $row['score']->note]);
+    }
+
+    public function finance(): StreamedResponse
+    {
+        return $this->csv('keuangan-siswa', ['NIS', 'Nama', 'Kategori', 'Tagihan', 'Nominal', 'Terbayar', 'Sisa', 'Jatuh tempo', 'Status'], StudentInvoice::with('student')->withSum('payments', 'amount')->orderByDesc('due_date')->cursor(), fn ($invoice) => [$invoice->student->nis, $invoice->student->nama, StudentInvoice::CATEGORIES[$invoice->category] ?? $invoice->category, $invoice->title, $invoice->amount, $invoice->payments_sum_amount ?? 0, max(0, (float) $invoice->amount - (float) ($invoice->payments_sum_amount ?? 0)), $invoice->due_date?->format('Y-m-d'), $invoice->status]);
+    }
+
+    public function assets(): StreamedResponse
+    {
+        return $this->csv('inventaris-aset', ['Kode', 'Nama', 'Kategori', 'Lokasi', 'Jumlah', 'Kondisi', 'Status', 'Nilai perolehan'], SchoolAsset::orderBy('name')->cursor(), fn ($asset) => [$asset->code, $asset->name, $asset->category, $asset->location, $asset->quantity, SchoolAsset::CONDITIONS[$asset->condition] ?? $asset->condition, SchoolAsset::STATUSES[$asset->status] ?? $asset->status, $asset->acquisition_value]);
+    }
+
+    public function studentRisks(): StreamedResponse
+    {
+        $students = Student::where('status', 'aktif')->get();
+        return $this->csv('indikator-risiko-siswa', ['NIS', 'Nama', 'Alpa', 'Poin pelanggaran', 'Kasus tindak lanjut'], $students, function ($student) { $alpa = StudentAttendance::where('student_id', $student->id)->where('status', 'alpa')->count(); $incidents = StudentIncident::where('student_id', $student->id); return [$student->nis, $student->nama, $alpa, (clone $incidents)->where('type', 'violation')->sum('points'), $incidents->whereIn('follow_up_status', ['open', 'follow_up'])->count()]; });
     }
 
     private function csv(string $name, array $headings, iterable $rows, callable $map): StreamedResponse

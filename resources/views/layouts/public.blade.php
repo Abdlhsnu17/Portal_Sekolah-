@@ -18,7 +18,7 @@
 @php
     $navigasi = [
         ['rute' => 'home', 'label' => 'Beranda', 'aktif' => 'home'],
-        ['rute' => 'profil', 'label' => 'Profil', 'aktif' => 'profil'],
+        ['rute' => 'profil', 'label' => 'Tentang Kami', 'aktif' => 'profil'],
         ['rute' => 'berita', 'label' => 'Berita', 'aktif' => 'berita*'],
         ['rute' => 'galeri', 'label' => 'Galeri', 'aktif' => 'galeri'],
         ['rute' => 'pendaftaran.status', 'label' => 'Cek Status', 'aktif' => 'pendaftaran.status'],
@@ -139,7 +139,7 @@
         <div class="lg:col-span-3">
             <p class="eyebrow text-slate-500">Navigasi</p>
             <ul class="mt-4 space-y-2.5 text-sm">
-                @foreach ([['profil', 'Profil Sekolah'], ['berita', 'Berita & Pengumuman'], ['galeri', 'Galeri'], ['pendaftaran.form', 'Pendaftaran']] as [$rute, $label])
+                @foreach ([['profil', 'Tentang Kami'], ['berita', 'Berita & Pengumuman'], ['galeri', 'Galeri'], ['pendaftaran.form', 'Pendaftaran']] as [$rute, $label])
                     <li>
                         <a href="{{ route($rute) }}" class="text-slate-400 transition hover:text-white">{{ $label }}</a>
                     </li>

@@ -1,5 +1,15 @@
 # Portal Sekolah
 
+## Webhook pembayaran
+
+Set `PAYMENT_WEBHOOK_SECRET` pada environment produksi, lalu arahkan provider pembayaran ke `POST /integrasi/pembayaran/webhook`. Header `X-Payment-Signature` berisi HMAC-SHA256 dari raw request body menggunakan secret tersebut. Payload minimal:
+
+```json
+{"external_reference":"PAY-20261128-ABCDEFGH","status":"paid","amount":150000,"paid_at":"2026-11-28T10:00:00+07:00"}
+```
+
+Status yang diterima adalah `paid`, `failed`, atau `expired`. Callback `paid` bersifat idempoten: pengiriman ulang tidak membuat pembayaran ganda.
+
 Portal Sekolah adalah aplikasi web Laravel untuk publikasi informasi sekolah, penerimaan siswa baru (PSB), dan administrasi operasional. Aplikasi menyediakan halaman publik serta panel admin untuk admin dan staf.
 
 ## Fitur Terbaru

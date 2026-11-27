@@ -74,7 +74,10 @@ class AssessmentController extends Controller
             'subject_id' => ['required', Rule::exists('subjects', 'id')->where('is_active', true)],
             'title' => ['required', 'string', 'max:150'],
             'type' => ['required', Rule::in(array_keys(Assessment::TYPES))],
+            'semester' => ['nullable', Rule::in(['ganjil', 'genap'])],
             'maximum_score' => ['required', 'numeric', 'min:1', 'max:999.99'],
+            'weight' => ['nullable', 'numeric', 'min:0.01', 'max:100'],
+            'is_published' => ['nullable', 'boolean'],
             'assessment_date' => ['required', 'date'],
         ]);
     }
