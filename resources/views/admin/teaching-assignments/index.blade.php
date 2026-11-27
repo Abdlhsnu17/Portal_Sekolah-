@@ -4,6 +4,7 @@
 
 @section('content')
     <div x-data="{ tabs: ['penugasan', 'mapel', 'kelas'], tab: ['penugasan', 'mapel', 'kelas'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'penugasan', select(value) { this.tab = value; history.replaceState(null, '', `#${value}`); } }" @hashchange.window="tab = tabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : tab">
+        <x-progress-steps class="mb-5" :steps="['Siapkan mata pelajaran', 'Pastikan kelas tersedia', 'Tetapkan guru']" :active="$subjects->isEmpty() ? 1 : (empty($classes) ? 2 : 3)" />
         <div class="mb-5 flex gap-2 overflow-x-auto border-b border-slate-200" role="tablist" aria-label="Pengelolaan akademik">
             @foreach (['penugasan' => 'Penugasan Guru', 'mapel' => 'Mata Pelajaran', 'kelas' => 'Kelas'] as $id => $label)
                 <button type="button" @click="select('{{ $id }}')" :aria-selected="(tab === '{{ $id }}').toString()" role="tab"

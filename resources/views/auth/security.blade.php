@@ -3,6 +3,12 @@
 @section('title', 'Pengaturan')
 
 @section('content')
+@php
+    $securityStep = ! $user->password_changed_at || $user->password_changed_at->lt(now()->subYears(50))
+        ? 1
+        : ((! config('security.mfa_enabled') || $user->hasTwoFactorAuthentication()) ? 3 : 2);
+@endphp
+<x-progress-steps class="mb-5 max-w-6xl" :steps="['Perbarui kata sandi', 'Aktifkan MFA', 'Keamanan siap']" :active="$securityStep" />
 <div x-data="{ tab: ['mfa', 'password', 'sessions', 'activity'@if($user->isAdmin()), 'settings'@endif].includes(location.hash.slice(1)) ? location.hash.slice(1) : '{{ $user->isAdmin() ? 'settings' : 'mfa' }}', select(value) { this.tab = value; history.replaceState(null, '', `#${value}`) } }"
      class="max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
     <div class="border-b border-slate-100 px-6 py-5">

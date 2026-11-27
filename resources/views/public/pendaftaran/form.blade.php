@@ -19,22 +19,7 @@
                 </p>
             </div>
         @endif
-        {{-- Penanda langkah --}}
-        <ol class="mb-10 flex items-center gap-3 text-sm">
-            @foreach ([['1', 'Isi formulir', true], ['2', 'Unggah dokumen', false], ['3', 'Pantau status', false]] as $i => [$no, $label, $aktif])
-                <li class="flex items-center gap-3">
-                    <span class="flex items-center gap-2.5 {{ $aktif ? 'text-brand-800' : 'text-slate-400' }}">
-                        <span class="tabular grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold {{ $aktif ? 'bg-brand-700 text-white' : 'bg-slate-100 text-slate-500' }}">
-                            {{ $no }}
-                        </span>
-                        <span class="hidden font-medium sm:block">{{ $label }}</span>
-                    </span>
-                    @if ($i < 2)
-                        <span class="h-px w-6 bg-slate-200 sm:w-10"></span>
-                    @endif
-                </li>
-            @endforeach
-        </ol>
+        <x-progress-steps class="mb-10" :steps="['Isi formulir', 'Unggah dokumen', 'Pantau status']" :active="1" />
 
         <form method="POST" action="{{ route('pendaftaran.store') }}" class="space-y-6">
             @csrf

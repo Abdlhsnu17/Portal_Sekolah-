@@ -25,7 +25,7 @@ class GuardianPortalController extends Controller
                 ->groupBy('status')
                 ->pluck('total', 'status'),
             'invoices' => StudentInvoice::where('student_id', $student->id)
-                ->withSum('payments', 'amount')
+                ->withSum('payments', 'amount')->with(['paymentRequests' => fn ($query) => $query->latest()->limit(1)])
                 ->latest()
                 ->get(),
             'notes' => $student->notes()

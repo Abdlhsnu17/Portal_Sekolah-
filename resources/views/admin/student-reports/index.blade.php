@@ -4,6 +4,7 @@
 
 @section('content')
     <div class="space-y-5">
+        <x-progress-steps :steps="['Siapkan penilaian', 'Input nilai', 'Buat draf rapor', 'Publikasikan']" :active="$student ? ($reportCards->contains(fn ($report) => $report->published_at) ? 4 : ($reportCards->isNotEmpty() ? 3 : 2)) : 1" />
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
             <form method="GET"
                   class="flex flex-col items-start gap-4 sm:flex-row sm:items-end"

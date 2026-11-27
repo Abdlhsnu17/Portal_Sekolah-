@@ -35,7 +35,19 @@
                         <div>
                             <h3 class="font-bold">Tagihan</h3>
                             <ul class="mt-2 text-sm text-slate-600">
-                                @forelse($item['invoices'] as $invoice)<li class="mb-2">{{ $invoice->title }}: Rp {{ number_format(max(0, (float) $invoice->amount - (float) ($invoice->payments_sum_amount ?? 0)), 0, ',', '.') }} @if($invoice->status !== 'lunas')<form method="POST" action="{{ route('guardian.invoices.pay', $invoice) }}" class="mt-1">@csrf<button class="text-xs font-semibold text-brand-700">Buat referensi bayar</button></form>@endif</li>@empty<li>Tidak ada tagihan.</li>@endforelse
+                                @forelse($item['invoices'] as $invoice)
+                                    @php
+                                        $paymentRequest = $invoice->paymentRequests->first();
+                                        $paymentStep = $invoice->status === 'lunas' ? 3 : ($paymentRequest?->status === 'pending' ? 2 : 1);
+                                    @endphp
+                                    <li class="mb-3 rounded-lg border border-slate-100 p-3 last:mb-0">
+                                        <p>{{ $invoice->title }}: <b>Rp {{ number_format(max(0, (float) $invoice->amount - (float) ($invoice->payments_sum_amount ?? 0)), 0, ',', '.') }}</b></p>
+                                        <x-progress-steps class="mt-3 text-xs" :steps="['Pilih tagihan', 'Bayar', 'Terverifikasi']" :active="$paymentStep" />
+                                        @if($invoice->status !== 'lunas')
+                                            <form method="POST" action="{{ route('guardian.invoices.pay', $invoice) }}" class="mt-3">@csrf<button class="text-xs font-semibold text-brand-700">{{ $paymentRequest?->status === 'pending' ? 'Buat ulang referensi bayar' : 'Buat referensi bayar' }}</button></form>
+                                        @endif
+                                    </li>
+                                @empty<li>Tidak ada tagihan.</li>@endforelse
                             </ul>
                         </div>
                         <div>

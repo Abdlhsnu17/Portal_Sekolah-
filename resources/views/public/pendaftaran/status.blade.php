@@ -7,6 +7,7 @@
                    teks="Masukkan nomor pendaftaran dan email yang Anda gunakan saat mendaftar untuk melihat perkembangan seleksi." />
 
     <section class="mx-auto max-w-3xl px-6 py-12">
+        <x-progress-steps class="mb-8" :steps="['Isi formulir', 'Unggah dokumen', 'Pantau status']" :active="3" />
         <form method="POST" action="{{ route('pendaftaran.status') }}"
               class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
             @csrf

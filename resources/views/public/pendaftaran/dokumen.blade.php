@@ -4,6 +4,7 @@
 
 @section('content')
     <section class="mx-auto max-w-5xl px-6 py-12">
+        <x-progress-steps class="mb-8" :steps="['Isi formulir', 'Unggah dokumen', 'Pantau status']" :active="2" />
         {{-- Kartu nomor pendaftaran --}}
         <div class="relative overflow-hidden rounded-2xl bg-brand-900 p-8 shadow-lift">
             <div class="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full bg-brand-600/30 blur-3xl"></div>
